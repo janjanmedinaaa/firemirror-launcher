@@ -28,4 +28,8 @@ class AppModule {
     @Provides
     @Singleton
     fun provideFocusManager(): IFocusManager = FocusManager()
+
+    @Provides
+    @Singleton
+    fun provideOpenWeatherManager(): IOpenWeatherManager = OpenWeatherManager()
 }

@@ -1,6 +1,7 @@
 package com.medina.juanantonio.firemirror.features.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import android.view.View.TEXT_ALIGNMENT_TEXT_END
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
@@ -26,6 +28,7 @@ import javax.inject.Inject
 class HomeFragment : Fragment() {
 
     private var binding: FragmentHomeBinding by autoCleared()
+    private val viewModel: HomeViewModel by viewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     @Inject
@@ -101,7 +104,24 @@ class HomeFragment : Fragment() {
             )
         }
 
+        listenToVM()
         listenToActivityVM()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.setupWeatherTimerTask()
+    }
+
+    override fun onDestroyView() {
+        viewModel.destroyTimerTask()
+        super.onDestroyView()
+    }
+
+    private fun listenToVM() {
+        viewModel.currentWeather.observe(viewLifecycleOwner) {
+            Log.d("DEVELOP", "$it")
+        }
     }
 
     private fun listenToActivityVM() {
