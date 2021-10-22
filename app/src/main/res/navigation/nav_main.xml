@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.medina.juanantonio.firemirror.features.home.HomeFragment"
+        android:label="Home Fragment"
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_homeFragment_to_imageViewerDialog"
+            app:destination="@id/imageViewerDialog" />
+    </fragment>
+
+    <dialog
+        android:id="@+id/imageViewerDialog"
+        android:name="com.medina.juanantonio.firemirror.common.dialogs.ImageViewerDialog"
+        android:label="ImageViewerDialog"
+        tools:layout="@layout/dialog_image_viewer">
+
+        <argument
+            android:name="imageUrlArg"
+            app:argType="string"
+            app:nullable="false" />
+    </dialog>
+</navigation>

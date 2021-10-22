@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FireMirror</string>
+    <string name="qr_url_link">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
+</resources>

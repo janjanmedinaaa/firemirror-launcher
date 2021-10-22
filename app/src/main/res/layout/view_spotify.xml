@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_album"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@tools:sample/avatars" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_name"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginVertical="@dimen/dp_4"
+        android:layout_marginStart="@dimen/dp_2"
+        app:layout_constraintBottom_toBottomOf="@id/text_view_name"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_view_name"
+        app:srcCompat="@drawable/ic_music" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_6"
+        android:layout_marginTop="@dimen/dp_4"
+        android:fontFamily="@font/roboto_light"
+        android:text="To the Bone"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintStart_toEndOf="@id/image_view_name"
+        app:layout_constraintTop_toBottomOf="@id/image_view_album" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_singer"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginVertical="@dimen/dp_2"
+        app:layout_constraintBottom_toBottomOf="@id/text_view_singer"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_view_singer"
+        app:srcCompat="@drawable/ic_person" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_singer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_4"
+        android:fontFamily="@font/roboto_light"
+        android:text="Pamungkas"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintStart_toEndOf="@id/image_view_singer"
+        app:layout_constraintTop_toBottomOf="@id/text_view_name" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_playlist"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginVertical="@dimen/dp_2"
+        app:layout_constraintBottom_toBottomOf="@id/text_view_playlist"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/text_view_playlist"
+        app:srcCompat="@drawable/ic_playlist" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_playlist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_4"
+        android:fontFamily="@font/roboto_light"
+        android:text="Hot Hits Philippines"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintStart_toEndOf="@id/image_view_playlist"
+        app:layout_constraintTop_toBottomOf="@id/text_view_singer" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_playing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="image_view_album, image_view_name, text_view_name,
+        image_view_singer, text_view_singer, image_view_playlist, text_view_playlist" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/image_view_spotify_standby"
+        android:layout_width="100dp"
+        android:layout_height="@dimen/dp_32"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/spotify_logo" />
+</androidx.constraintlayout.widget.ConstraintLayout>
