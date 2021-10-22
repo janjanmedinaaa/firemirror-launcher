@@ -1,7 +1,6 @@
 package com.medina.juanantonio.firemirror.features.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -11,14 +10,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import coil.load
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
 import com.medina.juanantonio.firemirror.data.managers.IFocusManager
 import com.medina.juanantonio.firemirror.data.managers.IHolidayManager
-import com.medina.juanantonio.firemirror.data.models.DefaultListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.IconLabelListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.ImageListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
 import com.medina.juanantonio.firemirror.databinding.FragmentHomeBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,7 +53,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.listDisplayUpcomingEvents.initialize(
-            title = "Upcoming",
+            title = getString(R.string.upcoming),
             itemList = ArrayList(
                 holidayManager.getHolidays().map {
                     IconLabelListDisplayItem(
@@ -66,7 +66,7 @@ class HomeFragment : Fragment() {
 
         binding.listDisplayViewApps.textAlignment = TEXT_ALIGNMENT_TEXT_END
         binding.listDisplayViewApps.initialize(
-            title = "Installed Apps",
+            title = getString(R.string.applications),
             itemList = ArrayList(
                 appManager.getAppList().map {
                     DefaultListDisplayItem(it.name, it.packageName)
@@ -79,10 +79,13 @@ class HomeFragment : Fragment() {
 
         binding.listDisplayGuestWifiQr.textAlignment = TEXT_ALIGNMENT_TEXT_END
         binding.listDisplayGuestWifiQr.initialize(
-            title = "Guest WIFI Access",
+            title = getString(R.string.guest_wifi_access),
             itemList = arrayListOf(
                 ImageListDisplayItem(
-                    imageUrl = getString(R.string.qr_url_link, "Sample")
+                    imageUrl = getString(
+                        R.string.qr_url,
+                        "WIFI:T:WPA;S:Medina Condo WIFI;P:24418A001431;H:;"
+                    )
                 )
             ),
             onClickAction = {
@@ -120,7 +123,24 @@ class HomeFragment : Fragment() {
 
     private fun listenToVM() {
         viewModel.currentWeather.observe(viewLifecycleOwner) {
-            Log.d("DEVELOP", "$it")
+            binding.imageViewWeatherIcon.load(
+                getString(R.string.weather_icon_url, it.weather.first().icon)
+            )
+            binding.textViewTemperature.text =
+                getString(R.string.temperature, it.main.temp)
+            binding.textViewFeelsTemperature.text =
+                getString(R.string.feels_temperature, it.main.feels_like)
+            binding.textViewTemperatureLocation.text =
+                getString(R.string.temperature_location, it.name)
+        }
+
+        viewModel.quote.observe(viewLifecycleOwner) {
+            val quoteString = if (it.author == null) getString(
+                R.string.quote_with_author,
+                it.text,
+                it.author
+            ) else it.text
+            binding.textViewQuote.text = quoteString
         }
     }
 

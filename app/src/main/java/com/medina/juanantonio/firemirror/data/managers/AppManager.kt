@@ -1,9 +1,9 @@
 package com.medina.juanantonio.firemirror.data.managers
 
 import android.content.Context
-import com.medina.juanantonio.firemirror.data.models.AppInfo
-import android.content.pm.ResolveInfo
 import android.content.Intent
+import android.content.pm.ResolveInfo
+import com.medina.juanantonio.firemirror.data.models.AppInfo
 
 class AppManager(private val context: Context) : IAppManager {
 

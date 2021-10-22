@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">FireMirror</string>
-    <string name="qr_url_link">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
+    <string name="qr_url">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
+    <string name="weather_icon_url">https://openweathermap.org/img/wn/%s@2x.png</string>
+
+    <string name="temperature_location">%s, Philippines</string>
+    <string name="temperature">%s \u2103</string>
+    <string name="feels_temperature">Feels %s \u2103</string>
+    <string name="quote_with_author">%s <br /> - %s</string>
+
+    <string name="guest_wifi_access">Guest WIFI Access</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="applications">Applications</string>
 </resources>

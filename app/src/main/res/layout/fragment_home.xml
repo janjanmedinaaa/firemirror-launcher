@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
@@ -75,11 +76,11 @@
         android:layout_marginTop="@dimen/dp_8"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_start"
-        app:layout_constraintHeight_max="200dp"
+        app:layout_constraintHeight_max="@dimen/dp_200"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_clock_time"
         app:layout_constraintVertical_bias="0"
-        tools:layout_height="200dp" />
+        tools:layout_height="@dimen/dp_200" />
 
     <com.medina.juanantonio.firemirror.common.views.SpotifyView
         android:id="@+id/view_spotify"
@@ -89,21 +90,37 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_quote"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/default_margin"
+        android:fontFamily="@font/roboto_light"
+        android:textAlignment="center"
+        android:textSize="@dimen/sp_20"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_end"
+        app:layout_constraintStart_toEndOf="@id/guideline_start"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias=".8"
+        tools:text="@tools:sample/lorem[20]" />
+
+    <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_view_temperature_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
-        android:text="Manila, Philippines"
         android:textSize="@dimen/sp_18"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Manila, Philippines" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_weather_icon"
-        android:layout_width="@dimen/dp_32"
-        android:layout_height="@dimen/dp_32"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
         android:layout_marginEnd="@dimen/dp_8"
         app:layout_constraintBottom_toBottomOf="@id/text_view_temperature"
+        app:layout_constraintDimensionRatio="1"
         app:layout_constraintEnd_toStartOf="@id/text_view_temperature"
         app:layout_constraintTop_toTopOf="@id/text_view_temperature"
         app:srcCompat="@drawable/ic_cloud" />
@@ -113,25 +130,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
-        android:text="70\u2103"
         android:textSize="@dimen/sp_42"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_view_temperature_location" />
+        app:layout_constraintTop_toBottomOf="@id/text_view_temperature_location"
+        tools:text="70\u2103" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_view_feels_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
-        android:text="Feels 70\u2103"
         android:textSize="@dimen/sp_18"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_view_temperature" />
+        app:layout_constraintTop_toBottomOf="@id/text_view_temperature"
+        tools:text="Feels 70\u2103" />
 
     <com.medina.juanantonio.firemirror.common.views.ListDisplayView
         android:id="@+id/list_display_guest_wifi_qr"
         android:layout_width="@dimen/dp_0"
-        android:layout_height="150dp"
+        android:layout_height="@dimen/dp_150"
         android:layout_marginTop="@dimen/dp_8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guideline_end"
@@ -142,16 +159,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintGuide_percent=".5"/>
+        app:layout_constraintGuide_percent=".5"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.medina.juanantonio.firemirror.common.views.ListDisplayView
         android:id="@+id/list_display_view_apps"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guideline_end"
         app:layout_constraintTop_toBottomOf="@id/guideline_installed_apps"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0" />
 </androidx.constraintlayout.widget.ConstraintLayout>

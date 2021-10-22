@@ -1,14 +1,11 @@
 package com.medina.juanantonio.firemirror.data.managers
 
-import android.annotation.SuppressLint
-import android.util.Log
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import com.medina.juanantonio.firemirror.common.extensions.toCurrentWeather
 import com.medina.juanantonio.firemirror.data.models.CurrentWeather
-import com.medina.juanantonio.firemirror.data.models.toCurrentWeather
 import kotlinx.coroutines.CompletableDeferred
 
-@SuppressLint("MissingPermission")
 class OpenWeatherManager : IOpenWeatherManager {
 
     companion object {
@@ -22,7 +19,8 @@ class OpenWeatherManager : IOpenWeatherManager {
         val request = currentWeatherAPI.httpGet(
             parameters = listOf(
                 Pair("zip", "$zipCode,$countryCode"),
-                Pair("appid", API_KEY)
+                Pair("appid", API_KEY),
+                Pair("units", "metric")
             )
         )
 

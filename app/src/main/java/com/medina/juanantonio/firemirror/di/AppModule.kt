@@ -32,4 +32,8 @@ class AppModule {
     @Provides
     @Singleton
     fun provideOpenWeatherManager(): IOpenWeatherManager = OpenWeatherManager()
+
+    @Provides
+    @Singleton
+    fun provideQuotesManager(): IQuotesManager = QuotesManager()
 }

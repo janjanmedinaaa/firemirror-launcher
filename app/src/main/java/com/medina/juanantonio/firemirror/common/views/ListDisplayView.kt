@@ -16,10 +16,10 @@ import coil.load
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.extensions.animateDimensions
 import com.medina.juanantonio.firemirror.common.extensions.animateTextSize
-import com.medina.juanantonio.firemirror.data.models.DefaultListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.IconLabelListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.ImageListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.ListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.ListDisplayItem
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayDefaultBinding
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayIconLabelBinding
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayImageBinding

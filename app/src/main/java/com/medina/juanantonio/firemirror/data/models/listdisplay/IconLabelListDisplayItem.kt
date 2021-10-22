@@ -1,4 +1,4 @@
-package com.medina.juanantonio.firemirror.data.models
+package com.medina.juanantonio.firemirror.data.models.listdisplay
 
 import androidx.annotation.DrawableRes
 import com.medina.juanantonio.firemirror.R
