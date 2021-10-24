@@ -9,20 +9,29 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import coil.load
+import com.medina.juanantonio.firemirror.Constants.PreferencesKey.SPOTIFY_TOKEN
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
+import com.medina.juanantonio.firemirror.data.managers.FocusManager
+import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
-import com.medina.juanantonio.firemirror.data.managers.IFocusManager
-import com.medina.juanantonio.firemirror.data.managers.IHolidayManager
+import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.managers.ISpotifyManager
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
 import com.medina.juanantonio.firemirror.databinding.FragmentHomeBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
+import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -30,21 +39,25 @@ class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding by autoCleared()
     private val viewModel: HomeViewModel by viewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
+    private lateinit var focusManager: FocusManager
 
     @Inject
     lateinit var appManager: IAppManager
 
     @Inject
-    lateinit var holidayManager: IHolidayManager
+    lateinit var dataStoreManager: IDataStoreManager
 
     @Inject
-    lateinit var focusManager: IFocusManager
+    lateinit var spotifyManager: ISpotifyManager
+
+    private var isSpotifyRequestPending = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
+        focusManager = FocusManager()
 
         return binding.root
     }
@@ -55,7 +68,7 @@ class HomeFragment : Fragment() {
         binding.listDisplayUpcomingEvents.initialize(
             title = getString(R.string.upcoming),
             itemList = ArrayList(
-                holidayManager.getHolidays().map {
+                HolidayManager.getHolidays().map {
                     IconLabelListDisplayItem(
                         drawable = R.drawable.ic_calendar,
                         label = it.name
@@ -114,6 +127,7 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.setupWeatherTimerTask()
+        requestUserCurrentTrack()
     }
 
     override fun onDestroyView() {
@@ -135,12 +149,22 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.quote.observe(viewLifecycleOwner) {
-            val quoteString = if (it.author == null) getString(
+            val quoteString = if (it.author != null) getString(
                 R.string.quote_with_author,
                 it.text,
                 it.author
             ) else it.text
             binding.textViewQuote.text = quoteString
+        }
+
+        viewModel.spotifyAccessToken.observe(viewLifecycleOwner) {
+            viewModel.viewModelScope.launch {
+                dataStoreManager.putString(SPOTIFY_TOKEN, it)
+                if (isSpotifyRequestPending) {
+                    requestUserCurrentTrack()
+                    isSpotifyRequestPending = false
+                }
+            }
         }
     }
 
@@ -151,6 +175,40 @@ class HomeFragment : Fragment() {
                 KeyEvent.KEYCODE_DPAD_DOWN -> focusManager.focusNextItem()
                 KeyEvent.KEYCODE_DPAD_RIGHT -> focusManager.focusNextList()
                 KeyEvent.KEYCODE_DPAD_LEFT -> focusManager.focusPreviousList()
+                KeyEvent.KEYCODE_MENU -> {
+                }
+            }
+        }
+
+        mainViewModel.authorizationResponse.observe(viewLifecycleOwner) {
+            when (it.type) {
+                AuthorizationResponse.Type.TOKEN -> {
+                    viewModel.spotifyAccessToken.value = it.accessToken
+                }
+                else -> Unit
+            }
+        }
+    }
+
+    private fun requestUserCurrentTrack() {
+        viewModel.viewModelScope.launch {
+            val token = dataStoreManager.getString(SPOTIFY_TOKEN)
+            if (token.isEmpty())
+                spotifyManager.authenticate(requireActivity())
+            else {
+                val (requestCode, currentTrack) =
+                    spotifyManager.getUserCurrentTrack(token)
+
+                if (requestCode == 401) {
+                    spotifyManager.authenticate(requireActivity())
+                    isSpotifyRequestPending = true
+                }
+
+                binding.viewSpotify.updateView(currentTrack)
+
+                Timer().schedule(2000) {
+                    requestUserCurrentTrack()
+                }
             }
         }
     }

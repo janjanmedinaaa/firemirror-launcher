@@ -6,7 +6,7 @@
     <string name="temperature_location">%s, Philippines</string>
     <string name="temperature">%s \u2103</string>
     <string name="feels_temperature">Feels %s \u2103</string>
-    <string name="quote_with_author">%s <br /> - %s</string>
+    <string name="quote_with_author">%s\n- %s</string>
 
     <string name="guest_wifi_access">Guest WIFI Access</string>
     <string name="upcoming">Upcoming</string>

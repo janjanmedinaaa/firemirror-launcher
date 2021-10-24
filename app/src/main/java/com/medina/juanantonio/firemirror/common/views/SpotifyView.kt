@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import coil.load
+import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 import com.medina.juanantonio.firemirror.databinding.ViewSpotifyBinding
 
 class SpotifyView(
@@ -18,9 +20,18 @@ class SpotifyView(
         true
     )
 
-    init {
-        binding.imageViewAlbum.load(
-            "https://cdn-s3.allmusic.com/release-covers/400/0003/135/0003135306.jpg"
-        )
+    fun updateView(currentTrack: SpotifyCurrentTrack?) {
+        if (currentTrack != null) {
+            binding.imageViewAlbum.load(currentTrack.albumImageUrl)
+            binding.textViewName.text = currentTrack.songName
+            binding.textViewSinger.text = currentTrack.artist
+            binding.textViewPlaylist.text = currentTrack.albumName
+
+            binding.groupPlaying.isVisible = true
+            binding.imageViewSpotifyStandby.isVisible = false
+        } else {
+            binding.groupPlaying.isVisible = false
+            binding.imageViewSpotifyStandby.isVisible = true
+        }
     }
 }

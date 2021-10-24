@@ -1,7 +1,12 @@
 package com.medina.juanantonio.firemirror.di
 
 import android.content.Context
-import com.medina.juanantonio.firemirror.data.managers.*
+import com.medina.juanantonio.firemirror.data.managers.AppManager
+import com.medina.juanantonio.firemirror.data.managers.DataStoreManager
+import com.medina.juanantonio.firemirror.data.managers.IAppManager
+import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.managers.ISpotifyManager
+import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,17 +28,15 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideHolidayManager(): IHolidayManager = HolidayManager()
+    fun provideDataStoreManager(
+        @ApplicationContext context: Context
+    ): IDataStoreManager {
+        return DataStoreManager(context)
+    }
 
     @Provides
     @Singleton
-    fun provideFocusManager(): IFocusManager = FocusManager()
-
-    @Provides
-    @Singleton
-    fun provideOpenWeatherManager(): IOpenWeatherManager = OpenWeatherManager()
-
-    @Provides
-    @Singleton
-    fun provideQuotesManager(): IQuotesManager = QuotesManager()
+    fun provideSpotifyManager(): ISpotifyManager {
+        return SpotifyManager()
+    }
 }

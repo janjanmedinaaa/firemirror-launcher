@@ -96,6 +96,9 @@ dependencies {
     // Fuel
     implementation 'com.github.kittinunf.fuel:fuel:2.3.1'
 
+    // Spotify
+    implementation 'com.spotify.android:auth:1.2.6'
+
     testImplementation 'junit:junit:4.+'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

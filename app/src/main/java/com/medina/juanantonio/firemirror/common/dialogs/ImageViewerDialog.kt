@@ -32,6 +32,7 @@ class ImageViewerDialog : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
         binding.imageViewDisplay.load(arguments?.getString(IMAGE_URL_ARG))
     }
 }

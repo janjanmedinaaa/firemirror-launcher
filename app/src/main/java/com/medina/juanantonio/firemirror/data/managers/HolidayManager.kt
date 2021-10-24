@@ -2,7 +2,7 @@ package com.medina.juanantonio.firemirror.data.managers
 
 import com.medina.juanantonio.firemirror.data.models.Holiday
 
-class HolidayManager : IHolidayManager {
+object HolidayManager : IHolidayManager {
 
     override fun getHolidays(): ArrayList<Holiday> {
         return arrayListOf(
@@ -22,7 +22,7 @@ class HolidayManager : IHolidayManager {
                 month = 4
                 dayOfMonth = 1
             },
-            Holiday(name = " Good Friday", constant = false).apply {
+            Holiday(name = "Good Friday", constant = false).apply {
                 month = 4
                 dayOfMonth = 2
             },

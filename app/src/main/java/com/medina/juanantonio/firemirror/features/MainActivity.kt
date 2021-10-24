@@ -1,10 +1,13 @@
 package com.medina.juanantonio.firemirror.features
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
+import com.spotify.sdk.android.auth.AuthorizationClient
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -32,7 +35,8 @@ class MainActivity : AppCompatActivity() {
         if (event?.keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_UP ||
-            event?.keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+            event?.keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+            event?.keyCode == KeyEvent.KEYCODE_MENU
         ) {
             if (event.action == 0)
                 viewModel.dispatchKeyEvent.value = event
@@ -41,5 +45,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         return super.dispatchKeyEvent(event)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != SpotifyManager.REQUEST_CODE) return
+
+        val response = AuthorizationClient.getResponse(resultCode, data)
+        viewModel.authorizationResponse.value = response
     }
 }

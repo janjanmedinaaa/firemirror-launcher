@@ -7,11 +7,9 @@ import com.medina.juanantonio.firemirror.data.models.Quote
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.random.Random
 
-class QuotesManager : IQuotesManager {
+object QuotesManager : IQuotesManager {
 
-    companion object {
-        const val BASE_URL = "https://type.fit/api/quotes"
-    }
+    private const val BASE_URL = "https://type.fit/api/quotes"
 
     var quotesList = listOf<Quote>()
 
