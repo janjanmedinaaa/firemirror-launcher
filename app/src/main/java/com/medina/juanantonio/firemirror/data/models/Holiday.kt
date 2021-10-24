@@ -1,8 +1,9 @@
 package com.medina.juanantonio.firemirror.data.models
 
 data class Holiday(
-    val date: String,
-    val day: String,
     val name: String,
-    val isLongWeekend: Boolean
-)
+    val constant: Boolean
+) {
+    var month: Int = -1
+    var dayOfMonth: Int = -1
+}

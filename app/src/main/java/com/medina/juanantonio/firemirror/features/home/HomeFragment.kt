@@ -58,7 +58,7 @@ class HomeFragment : Fragment() {
                 holidayManager.getHolidays().map {
                     IconLabelListDisplayItem(
                         drawable = R.drawable.ic_calendar,
-                        label = "${it.date} | ${it.name}"
+                        label = it.name
                     )
                 }
             )
