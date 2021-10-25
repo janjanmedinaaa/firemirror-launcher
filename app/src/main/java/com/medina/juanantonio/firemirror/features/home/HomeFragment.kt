@@ -12,14 +12,15 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import coil.load
-import com.medina.juanantonio.firemirror.Constants.PreferencesKey.SPOTIFY_TOKEN
+import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
+import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
 import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
-import com.medina.juanantonio.firemirror.data.managers.ISpotifyManager
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
@@ -28,10 +29,8 @@ import com.medina.juanantonio.firemirror.features.MainViewModel
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
-import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -46,11 +45,6 @@ class HomeFragment : Fragment() {
 
     @Inject
     lateinit var dataStoreManager: IDataStoreManager
-
-    @Inject
-    lateinit var spotifyManager: ISpotifyManager
-
-    private var isSpotifyRequestPending = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -127,7 +121,9 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.setupWeatherTimerTask()
-        requestUserCurrentTrack()
+        viewModel.requestUserCurrentTrack(requireActivity()) { currentTrack ->
+            binding.viewSpotify.updateView(currentTrack)
+        }
     }
 
     override fun onDestroyView() {
@@ -157,13 +153,29 @@ class HomeFragment : Fragment() {
             binding.textViewQuote.text = quoteString
         }
 
-        viewModel.spotifyAccessToken.observe(viewLifecycleOwner) {
+        viewModel.spotifyCode.observe(viewLifecycleOwner) { code ->
             viewModel.viewModelScope.launch {
-                dataStoreManager.putString(SPOTIFY_TOKEN, it)
-                if (isSpotifyRequestPending) {
-                    requestUserCurrentTrack()
-                    isSpotifyRequestPending = false
+                dataStoreManager.putString(SPOTIFY_CODE, code)
+                viewModel.requestAccessToken(code)
+            }
+        }
+
+        viewModel.spotifyAccessToken.observe(viewLifecycleOwner) { accessToken ->
+            viewModel.viewModelScope.launch {
+                dataStoreManager.putString(SPOTIFY_ACCESS_TOKEN, accessToken)
+
+                if (viewModel.isSpotifyRequestPending) {
+                    viewModel.requestUserCurrentTrack(requireActivity()) { currentTrack ->
+                        binding.viewSpotify.updateView(currentTrack)
+                    }
+                    viewModel.isSpotifyRequestPending = false
                 }
+            }
+        }
+
+        viewModel.spotifyRefreshToken.observe(viewLifecycleOwner) { refreshToken ->
+            viewModel.viewModelScope.launch {
+                dataStoreManager.putString(SPOTIFY_REFRESH_TOKEN, refreshToken)
             }
         }
     }
@@ -185,30 +197,10 @@ class HomeFragment : Fragment() {
                 AuthorizationResponse.Type.TOKEN -> {
                     viewModel.spotifyAccessToken.value = it.accessToken
                 }
+                AuthorizationResponse.Type.CODE -> {
+                    viewModel.spotifyCode.value = it.code
+                }
                 else -> Unit
-            }
-        }
-    }
-
-    private fun requestUserCurrentTrack() {
-        viewModel.viewModelScope.launch {
-            val token = dataStoreManager.getString(SPOTIFY_TOKEN)
-            if (token.isEmpty())
-                spotifyManager.authenticate(requireActivity())
-            else {
-                val (requestCode, currentTrack) =
-                    spotifyManager.getUserCurrentTrack(token)
-
-                if (requestCode == 401) {
-                    spotifyManager.authenticate(requireActivity())
-                    isSpotifyRequestPending = true
-                }
-
-                binding.viewSpotify.updateView(currentTrack)
-
-                Timer().schedule(2000) {
-                    requestUserCurrentTrack()
-                }
             }
         }
     }

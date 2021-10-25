@@ -1,9 +1,11 @@
 package com.medina.juanantonio.firemirror.common.extensions
 
+import android.util.Base64
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.medina.juanantonio.firemirror.data.models.CurrentWeather
 import com.medina.juanantonio.firemirror.data.models.Quote
+import com.medina.juanantonio.firemirror.data.models.SpotifyAccessToken
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 
 fun String.toCurrentWeather(): CurrentWeather {
@@ -17,4 +19,12 @@ fun String.toQuotesList(): List<Quote> {
 
 fun String.toSpotifyCurrentTrack(): SpotifyCurrentTrack {
     return Gson().fromJson(this, SpotifyCurrentTrack::class.java)
+}
+
+fun String.toSpotifyAccessToken(): SpotifyAccessToken {
+    return Gson().fromJson(this, SpotifyAccessToken::class.java)
+}
+
+fun String.toBase64(): String {
+    return Base64.encodeToString(toByteArray(), Base64.NO_WRAP)
 }

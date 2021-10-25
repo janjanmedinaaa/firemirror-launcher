@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
 import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -45,6 +46,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         return super.dispatchKeyEvent(event)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.data?.let {
+            val response = AuthorizationResponse.fromUri(it)
+            viewModel.authorizationResponse.value = response
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
