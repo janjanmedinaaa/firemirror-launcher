@@ -1,6 +1,7 @@
 package com.medina.juanantonio.firemirror.features.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +13,18 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import coil.load
-import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
 import com.medina.juanantonio.firemirror.common.extensions.spotifyView
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
+import com.medina.juanantonio.firemirror.common.views.SpotifyView
 import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
 import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
@@ -31,9 +34,9 @@ import com.medina.juanantonio.firemirror.databinding.ItemListDisplaySpotifyBindi
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -86,7 +89,7 @@ class HomeFragment : Fragment() {
                         activity = requireActivity(),
                         authenticate = true
                     ) { currentTrack ->
-                        binding.viewSpotify.updateView(currentTrack)
+                        updateSpotifyLyrics(binding.viewSpotify, currentTrack)
                     }
                 }
             }
@@ -147,7 +150,9 @@ class HomeFragment : Fragment() {
             activity = requireActivity(),
             authenticate = false
         ) { currentTrack ->
-            binding.listDisplaySpotify.spotifyView?.updateView(currentTrack)
+            binding.listDisplaySpotify.spotifyView?.let {
+                updateSpotifyLyrics(it, currentTrack)
+            }
         }
     }
 
@@ -178,8 +183,12 @@ class HomeFragment : Fragment() {
             binding.textViewQuote.text = quoteString
         }
 
+        viewModel.songLyrics.observe(viewLifecycleOwner) { lyrics ->
+
+        }
+
         viewModel.spotifyCode.observe(viewLifecycleOwner) { code ->
-            viewModel.viewModelScope.launch {
+            viewModel.viewModelScope.launch(Dispatchers.IO) {
                 dataStoreManager.putString(SPOTIFY_CODE, code)
                 viewModel.requestAccessToken(code)
             }
@@ -188,20 +197,23 @@ class HomeFragment : Fragment() {
         viewModel.spotifyAccessToken.observe(viewLifecycleOwner) { accessToken ->
             viewModel.viewModelScope.launch {
                 dataStoreManager.putString(SPOTIFY_ACCESS_TOKEN, accessToken)
-                if (viewModel.isSpotifyRequestPending) {
-                    viewModel.requestUserCurrentTrack(
-                        activity = requireActivity(),
-                        authenticate = false
-                    ) { currentTrack ->
-                        binding.listDisplaySpotify.spotifyView?.updateView(currentTrack)
+            }
+
+            if (viewModel.isSpotifyRequestPending) {
+                viewModel.requestUserCurrentTrack(
+                    activity = requireActivity(),
+                    authenticate = false
+                ) { currentTrack ->
+                    binding.listDisplaySpotify.spotifyView?.let {
+                        updateSpotifyLyrics(it, currentTrack)
                     }
-                    viewModel.isSpotifyRequestPending = false
                 }
+                viewModel.isSpotifyRequestPending = false
             }
         }
 
         viewModel.spotifyRefreshToken.observe(viewLifecycleOwner) { refreshToken ->
-            viewModel.viewModelScope.launch {
+            viewModel.viewModelScope.launch(Dispatchers.IO) {
                 dataStoreManager.putString(SPOTIFY_REFRESH_TOKEN, refreshToken)
             }
         }
@@ -230,5 +242,13 @@ class HomeFragment : Fragment() {
                 else -> Unit
             }
         }
+    }
+
+    private fun updateSpotifyLyrics(
+        spotifyView: SpotifyView,
+        currentTrack: SpotifyCurrentTrack?
+    ) {
+        spotifyView.updateView(currentTrack)
+        viewModel.getSongLyrics(currentTrack)
     }
 }

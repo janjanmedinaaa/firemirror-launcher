@@ -28,14 +28,17 @@ class HomeViewModel @Inject constructor(
 
     private var weatherTimerTask: TimerTask? = null
     private var spotifyJob: Job? = null
+    private var lyricsJob: Job? = null
 
     val currentWeather = MutableLiveData<CurrentWeather>()
     val quote = MutableLiveData<Quote>()
     val spotifyCode = MutableLiveData<String>()
     val spotifyAccessToken = MutableLiveData<String>()
     val spotifyRefreshToken = MutableLiveData<String>()
+    val songLyrics = MutableLiveData<List<String>>()
 
     var isSpotifyRequestPending = false
+    var currentLyricsTitle = ""
 
     fun setupWeatherTimerTask() {
         weatherTimerTask = Timer().schedule(0, 900000) {
@@ -52,6 +55,27 @@ class HomeViewModel @Inject constructor(
     fun destroyTimerTask() {
         weatherTimerTask?.cancel()
         weatherTimerTask = null
+    }
+
+    fun getSongLyrics(currentTrack: SpotifyCurrentTrack?) {
+        if (lyricsJob?.isActive == true) return
+        if (currentTrack != null) {
+            if (currentTrack.songName == currentLyricsTitle) return
+            currentLyricsTitle = currentTrack.songName
+            lyricsJob = viewModelScope.launch(Dispatchers.IO) {
+                val lyrics = LyricsManager.getSongLyrics(
+                    artist = currentTrack.artist,
+                    title = currentTrack.songName
+                )
+
+                withContext(Dispatchers.Main) {
+                    val lyricsList = LyricsManager.formatLyrics(
+                        lyrics.lyrics ?: return@withContext
+                    )
+                    songLyrics.value = lyricsList
+                }
+            }
+        }
     }
 
     fun requestUserCurrentTrack(

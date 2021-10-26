@@ -7,17 +7,17 @@ data class SpotifyCurrentTrack(
     data class Item(
         val name: String,
         val album: Album,
+        val artists: List<Artist>,
     ) {
 
+        data class Artist(
+            val name: String
+        )
+
         data class Album(
-            val artists: List<Artist>,
             val images: List<Image>,
             val name: String
         ) {
-
-            data class Artist(
-                val name: String
-            )
 
             data class Image(
                 val height: Int,
@@ -34,7 +34,9 @@ data class SpotifyCurrentTrack(
         get() = item?.album?.images?.first()?.url ?: ""
 
     val artist: String
-        get() = item?.album?.artists?.first()?.name ?: ""
+        get() {
+            return item?.artists?.joinToString(separator = ", ") { it.name } ?: ""
+        }
 
     val albumName: String
         get() = item?.album?.name ?: ""
