@@ -5,6 +5,7 @@ import com.medina.juanantonio.firemirror.common.views.ListDisplayView
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayDefaultBinding
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayIconLabelBinding
 import com.medina.juanantonio.firemirror.databinding.ItemListDisplayImageBinding
+import com.medina.juanantonio.firemirror.databinding.ItemListDisplaySpotifyBinding
 
 class FocusManager : IFocusManager {
     private val viewFocusList: MutableMap<Int, ListDisplayView> = mutableMapOf()
@@ -31,6 +32,15 @@ class FocusManager : IFocusManager {
             is ItemListDisplayImageBinding -> {
                 binding.imageView.isFocusable = true
                 binding.imageView.requestFocus()
+            }
+            is ItemListDisplaySpotifyBinding -> {
+                if (binding.viewSpotify.isOnStandBy) {
+                    binding.viewSpotify.spotifyLogo.isFocusable = true
+                    binding.viewSpotify.spotifyLogo.requestFocus()
+                } else {
+                    binding.viewSpotify.imageView.isFocusable = true
+                    binding.viewSpotify.imageView.requestFocus()
+                }
             }
         }
     }

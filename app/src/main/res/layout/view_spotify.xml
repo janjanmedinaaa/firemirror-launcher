@@ -19,11 +19,22 @@
         android:layout_height="@dimen/dp_0"
         android:layout_marginVertical="@dimen/dp_4"
         android:layout_marginStart="@dimen/dp_2"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="@id/text_view_name"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/text_view_name"
         app:srcCompat="@drawable/ic_music" />
+
+    <View
+        android:id="@+id/view_text_background"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:background="@drawable/background_list_display"
+        app:layout_constraintBottom_toBottomOf="@id/image_view_album"
+        app:layout_constraintEnd_toEndOf="@id/image_view_album"
+        app:layout_constraintStart_toStartOf="@id/image_view_album"
+        app:layout_constraintTop_toTopOf="@id/image_view_album" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_view_name"
@@ -31,20 +42,22 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_6"
         android:layout_marginTop="@dimen/dp_4"
+        android:background="@android:color/transparent"
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:singleLine="true"
-        android:text="To the Bone"
         android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@id/text_view_singer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_view_name"
-        app:layout_constraintTop_toBottomOf="@id/image_view_album" />
+        tools:text="To the Bone" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_singer"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:layout_marginVertical="@dimen/dp_2"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="@id/text_view_singer"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintStart_toStartOf="parent"
@@ -56,20 +69,22 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_4"
+        android:background="@android:color/transparent"
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:singleLine="true"
-        android:text="Pamungkas"
         android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@id/text_view_playlist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_view_singer"
-        app:layout_constraintTop_toBottomOf="@id/text_view_name" />
+        tools:text="Pamungkas" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image_view_playlist"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:layout_marginVertical="@dimen/dp_2"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toBottomOf="@id/text_view_playlist"
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,21 +96,22 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_4"
+        android:background="@android:color/transparent"
         android:ellipsize="end"
         android:fontFamily="@font/roboto_light"
         android:singleLine="true"
-        android:text="Hot Hits Philippines"
         android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_view_playlist"
-        app:layout_constraintTop_toBottomOf="@id/text_view_singer" />
+        tools:text="Hot Hits Philippines" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_playing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="image_view_album, image_view_name, text_view_name,
+        android:visibility="invisible"
+        app:constraint_referenced_ids="image_view_album, view_text_background, image_view_name, text_view_name,
         image_view_singer, text_view_singer, image_view_playlist, text_view_playlist"
         tools:visibility="visible" />
 
@@ -103,8 +119,8 @@
         android:id="@+id/image_view_spotify_standby"
         android:layout_width="100dp"
         android:layout_height="@dimen/dp_32"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/spotify_logo"
         tools:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>

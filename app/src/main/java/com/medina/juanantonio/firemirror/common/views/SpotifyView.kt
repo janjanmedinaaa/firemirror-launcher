@@ -3,7 +3,10 @@ package com.medina.juanantonio.firemirror.common.views
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import coil.load
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
@@ -20,18 +23,27 @@ class SpotifyView(
         true
     )
 
-    fun updateView(currentTrack: SpotifyCurrentTrack?) {
-        if (currentTrack != null) {
-            binding.imageViewAlbum.load(currentTrack.albumImageUrl)
-            binding.textViewName.text = currentTrack.songName
-            binding.textViewSinger.text = currentTrack.artist
-            binding.textViewPlaylist.text = currentTrack.albumName
+    val spotifyLogo: AppCompatImageView
+        get() = binding.imageViewSpotifyStandby
 
-            binding.groupPlaying.isVisible = true
-            binding.imageViewSpotifyStandby.isVisible = false
-        } else {
-            binding.groupPlaying.isVisible = false
-            binding.imageViewSpotifyStandby.isVisible = true
+    val imageView: AppCompatImageView
+        get() = binding.imageViewAlbum
+
+    val textBackground: View
+        get() = binding.viewTextBackground
+
+    val isOnStandBy: Boolean
+        get() = binding.imageViewSpotifyStandby.isVisible
+
+    fun updateView(currentTrack: SpotifyCurrentTrack?) {
+        currentTrack?.run {
+            binding.imageViewAlbum.load(albumImageUrl)
+            binding.textViewName.text = songName
+            binding.textViewSinger.text = artist
+            binding.textViewPlaylist.text = albumName
         }
+
+        binding.groupPlaying.isInvisible = currentTrack == null
+        binding.imageViewSpotifyStandby.isInvisible = currentTrack != null
     }
 }

@@ -16,22 +16,17 @@ import coil.load
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.extensions.animateDimensions
 import com.medina.juanantonio.firemirror.common.extensions.animateTextSize
-import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
-import com.medina.juanantonio.firemirror.data.models.listdisplay.ListDisplayItem
-import com.medina.juanantonio.firemirror.databinding.ItemListDisplayDefaultBinding
-import com.medina.juanantonio.firemirror.databinding.ItemListDisplayIconLabelBinding
-import com.medina.juanantonio.firemirror.databinding.ItemListDisplayImageBinding
-import com.medina.juanantonio.firemirror.databinding.ViewListDisplayBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 import kotlin.random.Random
-
 import android.widget.RelativeLayout
+import androidx.core.view.postDelayed
+import androidx.core.view.updatePadding
+import com.medina.juanantonio.firemirror.data.models.listdisplay.*
+import com.medina.juanantonio.firemirror.databinding.*
 
 class ListDisplayView(
     context: Context,
@@ -56,7 +51,8 @@ class ListDisplayView(
     fun initialize(
         title: String? = this.title,
         itemList: ArrayList<ListDisplayItem> = this.itemList,
-        onClickAction: ((ListDisplayItem) -> Unit)? = null
+        onClickAction: ((ListDisplayItem, ViewBinding) -> Unit)? = null,
+        noBottomPadding: Boolean = false
     ): ListDisplayAdapter {
         this.title = title
         this.itemList = itemList
@@ -88,6 +84,7 @@ class ListDisplayView(
         this.adapter = adapter
 
         binding.recyclerViewListDisplay.apply {
+            if (noBottomPadding) updatePadding(bottom = 0)
             this.adapter = adapter
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         }
@@ -101,7 +98,7 @@ class ListDisplayView(
 
     inner class ListDisplayAdapter(
         private val itemList: ArrayList<ListDisplayItem>,
-        private val onClickAction: ((ListDisplayItem) -> Unit)? = {},
+        private val onClickAction: ((ListDisplayItem, ViewBinding) -> Unit)? = {_, _ -> },
         private val textAlignment: Int = TEXT_ALIGNMENT_TEXT_START,
         private val onFocusChanged: ((Int) -> Unit) = {}
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -128,13 +125,21 @@ class ListDisplayView(
                     )
                     ImageListDisplayItemViewHolder(binding)
                 }
-                else -> {
+                R.layout.item_list_display_icon_label -> {
                     val binding = ItemListDisplayIconLabelBinding.inflate(
                         LayoutInflater.from(parent.context),
                         parent,
                         false
                     )
                     IconLabelListDisplayItemViewHolder(binding)
+                }
+                else -> {
+                    val binding = ItemListDisplaySpotifyBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
+                    SpotifyListDisplayItemViewHolder(binding)
                 }
             }
         }
@@ -156,6 +161,9 @@ class ListDisplayView(
                 is IconLabelListDisplayItemViewHolder -> {
                     holder.bind(position, itemList[position] as IconLabelListDisplayItem)
                 }
+                is SpotifyListDisplayItemViewHolder -> {
+                    holder.bind(position, itemList[position] as SpotifyListDisplayItem)
+                }
             }
         }
 
@@ -169,7 +177,7 @@ class ListDisplayView(
                 binding.textViewLabel.text = item.label
                 binding.textViewLabel.textAlignment = textAlignment
                 binding.textViewLabel.setOnClickListener {
-                    onClickAction?.invoke(item)
+                    onClickAction?.invoke(item, binding)
                 }
 
                 binding.textViewLabel.onFocusChangeListener =
@@ -222,7 +230,7 @@ class ListDisplayView(
                         }
 
                     setOnClickListener {
-                        onClickAction?.invoke(item)
+                        onClickAction?.invoke(item, binding)
                     }
                 }
             }
@@ -238,7 +246,7 @@ class ListDisplayView(
                 binding.textViewLabel.text = item.label
                 binding.textViewLabel.textAlignment = textAlignment
                 binding.textViewLabel.setOnClickListener {
-                    onClickAction?.invoke(item)
+                    onClickAction?.invoke(item, binding)
                 }
 
                 binding.textViewLabel.onFocusChangeListener =
@@ -254,6 +262,82 @@ class ListDisplayView(
                         null
                     )
                 )
+            }
+        }
+
+        inner class SpotifyListDisplayItemViewHolder(
+            private val binding: ItemListDisplaySpotifyBinding
+        ) : RecyclerView.ViewHolder(binding.root) {
+
+            fun bind(position: Int, item: SpotifyListDisplayItem) {
+                viewList[position] = binding
+
+                binding.viewSpotify.apply {
+                    val params = layoutParams as RelativeLayout.LayoutParams
+                    when (this@ListDisplayAdapter.textAlignment) {
+                        TEXT_ALIGNMENT_TEXT_START ->
+                            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
+                        TEXT_ALIGNMENT_CENTER ->
+                            params.addRule(RelativeLayout.CENTER_IN_PARENT)
+                        TEXT_ALIGNMENT_TEXT_END ->
+                            params.addRule(RelativeLayout.ALIGN_PARENT_END)
+                    }
+                    layoutParams = params
+                }
+
+                binding.viewSpotify.spotifyLogo.apply {
+                    id = Random.nextInt(100000, 999999)
+                    postDelayed(500) {
+                        imageDimensionsMap[id] = Pair(measuredWidth, measuredHeight)
+
+                        onFocusChangeListener =
+                            OnFocusChangeListener { view, hasFocus ->
+                                val imageDimensions =
+                                    imageDimensionsMap[id] ?: return@OnFocusChangeListener
+                                (view as AppCompatImageView).animateDimensions(
+                                    originalViewDimensions = imageDimensions,
+                                    increasePercentage = if (hasFocus) .1f else 0f
+                                )
+                                onFocusChanged(position)
+                            }
+                    }
+
+                    setOnClickListener {
+                        onClickAction?.invoke(item, binding)
+                    }
+                }
+
+                binding.viewSpotify.imageView.apply {
+                    id = Random.nextInt(100000, 999999)
+
+                    postDelayed(500) {
+                        val dimensionPair = Pair(measuredWidth, measuredHeight)
+                        imageDimensionsMap[id] = dimensionPair
+                        binding.viewSpotify.textBackground.animateDimensions(
+                            originalViewDimensions = dimensionPair,
+                            increasePercentage = 0f
+                        )
+
+                        onFocusChangeListener =
+                            OnFocusChangeListener { view, hasFocus ->
+                                val imageDimensions =
+                                    imageDimensionsMap[id] ?: return@OnFocusChangeListener
+                                (view as AppCompatImageView).animateDimensions(
+                                    originalViewDimensions = imageDimensions,
+                                    increasePercentage = if (hasFocus) .1f else 0f
+                                )
+                                binding.viewSpotify.textBackground.animateDimensions(
+                                    originalViewDimensions = imageDimensions,
+                                    increasePercentage = if (hasFocus) .1f else 0f
+                                )
+                                onFocusChanged(position)
+                            }
+                    }
+
+                    setOnClickListener {
+                        onClickAction?.invoke(item, binding)
+                    }
+                }
             }
         }
     }

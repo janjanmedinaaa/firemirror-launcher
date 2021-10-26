@@ -16,6 +16,7 @@ import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
+import com.medina.juanantonio.firemirror.common.extensions.spotifyView
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
@@ -24,7 +25,9 @@ import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.ImageListDisplayItem
+import com.medina.juanantonio.firemirror.data.models.listdisplay.SpotifyListDisplayItem
 import com.medina.juanantonio.firemirror.databinding.FragmentHomeBinding
+import com.medina.juanantonio.firemirror.databinding.ItemListDisplaySpotifyBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
@@ -71,6 +74,24 @@ class HomeFragment : Fragment() {
             )
         )
 
+        binding.listDisplaySpotify.initialize(
+            itemList = arrayListOf(
+                SpotifyListDisplayItem(currentTrack = null)
+            ),
+            noBottomPadding = true,
+            onClickAction = { _, binding ->
+                if (binding !is ItemListDisplaySpotifyBinding) return@initialize
+                if (binding.viewSpotify.isOnStandBy) {
+                    viewModel.requestUserCurrentTrack(
+                        activity = requireActivity(),
+                        authenticate = true
+                    ) { currentTrack ->
+                        binding.viewSpotify.updateView(currentTrack)
+                    }
+                }
+            }
+        )
+
         binding.listDisplayViewApps.textAlignment = TEXT_ALIGNMENT_TEXT_END
         binding.listDisplayViewApps.initialize(
             title = getString(R.string.applications),
@@ -79,8 +100,8 @@ class HomeFragment : Fragment() {
                     DefaultListDisplayItem(it.name, it.packageName)
                 }
             ),
-            onClickAction = {
-                appManager.openApplication((it as DefaultListDisplayItem).value)
+            onClickAction = { item, _ ->
+                appManager.openApplication((item as DefaultListDisplayItem).value)
             }
         )
 
@@ -95,10 +116,10 @@ class HomeFragment : Fragment() {
                     )
                 )
             ),
-            onClickAction = {
+            onClickAction = { item, _ ->
                 findNavController().navigate(
                     HomeFragmentDirections.actionHomeFragmentToImageViewerDialog(
-                        imageUrlArg = ((it as ImageListDisplayItem).imageUrl)
+                        imageUrlArg = ((item as ImageListDisplayItem).imageUrl)
                     )
                 )
             }
@@ -108,6 +129,7 @@ class HomeFragment : Fragment() {
             focusManager.setupViewFocusList(
                 arrayListOf(
                     binding.listDisplayUpcomingEvents,
+                    binding.listDisplaySpotify,
                     binding.listDisplayGuestWifiQr,
                     binding.listDisplayViewApps
                 )
@@ -121,8 +143,11 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.setupWeatherTimerTask()
-        viewModel.requestUserCurrentTrack(requireActivity()) { currentTrack ->
-            binding.viewSpotify.updateView(currentTrack)
+        viewModel.requestUserCurrentTrack(
+            activity = requireActivity(),
+            authenticate = false
+        ) { currentTrack ->
+            binding.listDisplaySpotify.spotifyView?.updateView(currentTrack)
         }
     }
 
@@ -163,10 +188,12 @@ class HomeFragment : Fragment() {
         viewModel.spotifyAccessToken.observe(viewLifecycleOwner) { accessToken ->
             viewModel.viewModelScope.launch {
                 dataStoreManager.putString(SPOTIFY_ACCESS_TOKEN, accessToken)
-
                 if (viewModel.isSpotifyRequestPending) {
-                    viewModel.requestUserCurrentTrack(requireActivity()) { currentTrack ->
-                        binding.viewSpotify.updateView(currentTrack)
+                    viewModel.requestUserCurrentTrack(
+                        activity = requireActivity(),
+                        authenticate = false
+                    ) { currentTrack ->
+                        binding.listDisplaySpotify.spotifyView?.updateView(currentTrack)
                     }
                     viewModel.isSpotifyRequestPending = false
                 }

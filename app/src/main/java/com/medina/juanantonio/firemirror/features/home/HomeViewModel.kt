@@ -56,12 +56,14 @@ class HomeViewModel @Inject constructor(
 
     fun requestUserCurrentTrack(
         activity: Activity,
+        authenticate: Boolean,
         onCurrentTrack: (SpotifyCurrentTrack?) -> Unit
     ) {
         if (spotifyJob?.isActive == true) return
         spotifyJob = viewModelScope.launch {
             val token = dataStoreManager.getString(SPOTIFY_ACCESS_TOKEN)
             if (token.isEmpty()) {
+                if (!authenticate) return@launch
                 spotifyManager.authenticate(activity)
                 isSpotifyRequestPending = true
             } else {
@@ -72,8 +74,8 @@ class HomeViewModel @Inject constructor(
                     refreshAccessToken(dataStoreManager.getString(SPOTIFY_REFRESH_TOKEN))
                     isSpotifyRequestPending = true
                 } else {
-                    Timer().schedule(2000) {
-                        requestUserCurrentTrack(activity, onCurrentTrack)
+                    Timer().schedule(1300) {
+                        requestUserCurrentTrack(activity, authenticate, onCurrentTrack)
                     }
                 }
 

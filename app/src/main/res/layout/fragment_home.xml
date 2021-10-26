@@ -82,12 +82,14 @@
         app:layout_constraintVertical_bias="0"
         tools:layout_height="@dimen/dp_200" />
 
-    <com.medina.juanantonio.firemirror.common.views.SpotifyView
-        android:id="@+id/view_spotify"
-        android:layout_width="wrap_content"
+    <com.medina.juanantonio.firemirror.common.views.ListDisplayView
+        android:id="@+id/list_display_spotify"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
+        app:layout_constraintHeight_max="@dimen/dp_200"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_start" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/text_view_quote"
