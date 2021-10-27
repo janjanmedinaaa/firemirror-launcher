@@ -26,6 +26,8 @@ import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY
 import com.medina.juanantonio.firemirror.common.extensions.spotifyView
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.common.views.SpotifyView
+import com.medina.juanantonio.firemirror.common.views.StackLayoutManager
+import com.medina.juanantonio.firemirror.data.adapters.LyricsAdapter
 import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
@@ -51,7 +53,11 @@ class HomeFragment : Fragment() {
     private var binding: FragmentHomeBinding by autoCleared()
     private val viewModel: HomeViewModel by viewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
+    private val stackLayoutManager = StackLayoutManager(
+        horizontalLayout = false
+    )
     private lateinit var focusManager: FocusManager
+    private lateinit var lyricsAdapter: LyricsAdapter
 
     private val localBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(requireContext())
@@ -83,13 +89,19 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
-        focusManager = FocusManager()
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        focusManager = FocusManager()
+        lyricsAdapter = LyricsAdapter()
+
+        binding.recyclerViewLyrics.apply {
+            layoutManager = stackLayoutManager
+            adapter = lyricsAdapter
+        }
 
 //        TODO: Register Receiver
 //        localBroadcastManager.registerReceiver(
@@ -207,20 +219,28 @@ class HomeFragment : Fragment() {
         }
 
         viewModel.quote.observe(viewLifecycleOwner) {
+            it ?: return@observe
+
             val quoteString = if (it.author != null) getString(
                 R.string.quote_with_author,
                 it.text,
                 it.author
             ) else it.text
-            binding.textViewQuote.text = quoteString
+
+            if (viewModel.songLyrics.value?.isEmpty() == true) {
+                lyricsAdapter.setLyrics(arrayListOf(quoteString))
+                stackLayoutManager.scrollToPosition(0f, duration = 500)
+            }
         }
 
         viewModel.songLyrics.observe(viewLifecycleOwner) { lyrics ->
-
+            if (lyrics.isEmpty()) viewModel.quote.run { value = value }
+            else lyricsAdapter.setLyrics(lyrics)
+            stackLayoutManager.scrollToPosition(0f, duration = 500)
         }
 
         viewModel.spotifyCode.observe(viewLifecycleOwner) { code ->
-            viewModel.viewModelScope.launch(Dispatchers.IO) {
+            viewModel.viewModelScope.launch {
                 dataStoreManager.putString(SPOTIFY_CODE, code)
                 viewModel.requestAccessToken(code)
             }
@@ -258,7 +278,18 @@ class HomeFragment : Fragment() {
                 KeyEvent.KEYCODE_DPAD_DOWN -> focusManager.focusNextItem()
                 KeyEvent.KEYCODE_DPAD_RIGHT -> focusManager.focusNextList()
                 KeyEvent.KEYCODE_DPAD_LEFT -> focusManager.focusPreviousList()
-                KeyEvent.KEYCODE_MENU -> {
+                KeyEvent.KEYCODE_MEDIA_REWIND -> {
+                    val previousItem = stackLayoutManager.currentItem - 1
+                    if (previousItem < 0) return@observe
+
+                    stackLayoutManager.scrollToPosition(previousItem)
+                }
+                KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                    val nextItem = stackLayoutManager.currentItem + 1
+                    val lyricsMaxIndex = viewModel.songLyrics.value?.size?.minus(1) ?: -1
+                    if (nextItem > lyricsMaxIndex) return@observe
+
+                    stackLayoutManager.scrollToPosition(nextItem)
                 }
             }
         }
@@ -281,6 +312,7 @@ class HomeFragment : Fragment() {
         currentTrack: SpotifyCurrentTrack?
     ) {
         spotifyView.updateView(currentTrack)
-        viewModel.getSongLyrics(currentTrack)
+        if (currentTrack == null) viewModel.quote.run { value = value }
+        else viewModel.getSongLyrics(currentTrack)
     }
 }

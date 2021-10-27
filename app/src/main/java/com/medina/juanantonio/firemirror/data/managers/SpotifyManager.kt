@@ -1,6 +1,7 @@
 package com.medina.juanantonio.firemirror.data.managers
 
 import android.app.Activity
+import android.util.Log
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
@@ -33,21 +34,26 @@ class SpotifyManager : ISpotifyManager {
     }
 
     override fun authenticate(activity: Activity, externalBrowser: Boolean): String {
-        val state = Random.nextInt(100000, 999999).toString()
-        val builder = AuthorizationRequest.Builder(
-            CLIENT_ID,
-            AuthorizationResponse.Type.CODE,
-            REDIRECT_URL
-        ).setScopes(arrayOf("user-read-playback-state"))
-            .setState(state)
-        val request = builder.build()
+        return try {
+            val state = Random.nextInt(100000, 999999).toString()
+            val builder = AuthorizationRequest.Builder(
+                CLIENT_ID,
+                AuthorizationResponse.Type.CODE,
+                REDIRECT_URL
+            ).setScopes(arrayOf("user-read-playback-state"))
+                .setState(state)
+            val request = builder.build()
 
-        if (externalBrowser)
-            AuthorizationClient.openLoginInBrowser(activity, request)
-        else
-            AuthorizationClient.openLoginActivity(activity, REQUEST_CODE, request)
+            if (externalBrowser)
+                AuthorizationClient.openLoginInBrowser(activity, request)
+            else
+                AuthorizationClient.openLoginActivity(activity, REQUEST_CODE, request)
 
-        return state
+            state
+        } catch (e: Exception) {
+            Log.d(TAG, "${e.message}")
+            ""
+        }
     }
 
     override suspend fun requestAccessToken(code: String): SpotifyAccessToken? {

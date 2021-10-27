@@ -35,7 +35,7 @@ class HomeViewModel @Inject constructor(
     val spotifyCode = MutableLiveData<String>()
     val spotifyAccessToken = MutableLiveData<String>()
     val spotifyRefreshToken = MutableLiveData<String>()
-    val songLyrics = MutableLiveData<List<String>>()
+    val songLyrics = MutableLiveData(arrayListOf<String>())
 
     var isSpotifyRequestPending = false
     var currentLyricsTitle = ""
@@ -57,23 +57,18 @@ class HomeViewModel @Inject constructor(
         weatherTimerTask = null
     }
 
-    fun getSongLyrics(currentTrack: SpotifyCurrentTrack?) {
+    fun getSongLyrics(currentTrack: SpotifyCurrentTrack) {
         if (lyricsJob?.isActive == true) return
-        if (currentTrack != null) {
-            if (currentTrack.songName == currentLyricsTitle) return
-            currentLyricsTitle = currentTrack.songName
-            lyricsJob = viewModelScope.launch(Dispatchers.IO) {
-                val lyrics = LyricsManager.getSongLyrics(
-                    artist = currentTrack.artist,
-                    title = currentTrack.songName
-                )
+        if (currentTrack.songName == currentLyricsTitle) return
+        currentLyricsTitle = currentTrack.songName
+        lyricsJob = viewModelScope.launch(Dispatchers.IO) {
+            val lyrics = LyricsManager.getSongLyrics(
+                artist = currentTrack.artist,
+                title = currentTrack.songName
+            )
 
-                withContext(Dispatchers.Main) {
-                    val lyricsList = LyricsManager.formatLyrics(
-                        lyrics.lyrics ?: return@withContext
-                    )
-                    songLyrics.value = lyricsList
-                }
+            withContext(Dispatchers.Main) {
+                songLyrics.value = LyricsManager.formatLyrics(lyrics.lyrics ?: "")
             }
         }
     }
@@ -95,10 +90,10 @@ class HomeViewModel @Inject constructor(
                     spotifyManager.getUserCurrentTrack(token)
 
                 if (requestCode == 401) {
-                    refreshAccessToken(dataStoreManager.getString(SPOTIFY_REFRESH_TOKEN))
                     isSpotifyRequestPending = true
+                    refreshAccessToken(dataStoreManager.getString(SPOTIFY_REFRESH_TOKEN))
                 } else {
-                    Timer().schedule(1300) {
+                    Timer().schedule(500) {
                         requestUserCurrentTrack(activity, authenticate, onCurrentTrack)
                     }
                 }

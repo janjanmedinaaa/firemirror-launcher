@@ -53,7 +53,8 @@ class MainActivity : AppCompatActivity() {
             event?.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_UP ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
-            event?.keyCode == KeyEvent.KEYCODE_MENU
+            event?.keyCode == KeyEvent.KEYCODE_MEDIA_REWIND ||
+            event?.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
         ) {
             if (event.action == 0)
                 viewModel.dispatchKeyEvent.value = event
