@@ -4,6 +4,12 @@
     package="com.medina.juanantonio.firemirror">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -33,7 +39,6 @@
                     android:scheme="com.medina.juanantonio.firemirror" />
             </intent-filter>
 
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,6 +51,10 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <service
+            android:name=".ble.BluetoothLEService"
+            android:exported="false" />
     </application>
 
 </manifest>

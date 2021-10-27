@@ -1,7 +1,9 @@
 package com.medina.juanantonio.firemirror.features.home
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +13,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import coil.load
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.ble.BluetoothLEService
+import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
+import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
@@ -24,6 +30,7 @@ import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
 import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
@@ -46,6 +53,25 @@ class HomeFragment : Fragment() {
     private val mainViewModel: MainViewModel by activityViewModels()
     private lateinit var focusManager: FocusManager
 
+    private val localBroadcastManager by lazy {
+        LocalBroadcastManager.getInstance(requireContext())
+    }
+
+    private val bluetoothLeServiceReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            @Suppress("UNCHECKED_CAST")
+            val scannedDevices = intent?.getSerializableExtra(
+                BluetoothLEService.BLUE_BUTT_DEVICES
+            ) as? HashMap<String, BlueButtDevice>
+        }
+    }
+
+    @Inject
+    lateinit var bluetoothLEServiceManager: BluetoothLEServiceManager
+
+    @Inject
+    lateinit var bluetoothLeManager: IBluetoothLEManager
+
     @Inject
     lateinit var appManager: IAppManager
 
@@ -64,6 +90,12 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+//        TODO: Register Receiver
+//        localBroadcastManager.registerReceiver(
+//            bluetoothLeServiceReceiver,
+//            IntentFilter(BluetoothLEService.SCANNED_DEVICES)
+//        )
 
         binding.listDisplayUpcomingEvents.initialize(
             title = getString(R.string.upcoming),

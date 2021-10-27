@@ -5,20 +5,36 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.viewModels
-import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
+import com.medina.juanantonio.firemirror.databinding.ActivityMainBinding
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityMainBinding
+
+    @Inject
+    lateinit var bluetoothLEServiceManager: BluetoothLEServiceManager
 
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+//        TODO: Start Bluetooth LE Service
+//        runWithPermissions(
+//            Manifest.permission.ACCESS_FINE_LOCATION,
+//            Manifest.permission.ACCESS_COARSE_LOCATION
+//        ) {
+//            bluetoothLEServiceManager.startBluetoothLEService()
+//        }
     }
 
     /**
@@ -62,5 +78,10 @@ class MainActivity : AppCompatActivity() {
 
         val response = AuthorizationClient.getResponse(resultCode, data)
         viewModel.authorizationResponse.value = response
+    }
+
+    override fun finish() {
+        bluetoothLEServiceManager.stopBluetoothLEService()
+        super.finish()
     }
 }
