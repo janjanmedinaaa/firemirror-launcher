@@ -79,7 +79,7 @@ class HomeViewModel @Inject constructor(
         onCurrentTrack: (SpotifyCurrentTrack?) -> Unit
     ) {
         if (spotifyJob?.isActive == true) return
-        spotifyJob = viewModelScope.launch {
+        spotifyJob = viewModelScope.launch(Dispatchers.IO) {
             val token = dataStoreManager.getString(SPOTIFY_ACCESS_TOKEN)
             if (token.isEmpty()) {
                 if (!authenticate) return@launch
@@ -106,15 +106,21 @@ class HomeViewModel @Inject constructor(
 
     suspend fun requestAccessToken(code: String) {
         val result = spotifyManager.requestAccessToken(code)
-        spotifyAccessToken.value = result?.access_token
-        result?.refresh_token?.let {
-            spotifyRefreshToken.value = it
+
+        withContext(Dispatchers.Main) {
+            spotifyAccessToken.value = result?.access_token
+            result?.refresh_token?.let {
+                spotifyRefreshToken.value = it
+            }
         }
     }
 
     private suspend fun refreshAccessToken(refreshToken: String) {
         val result = spotifyManager.refreshAccessToken(refreshToken)
-        spotifyAccessToken.value = result?.access_token
+
+        withContext(Dispatchers.Main) {
+            spotifyAccessToken.value = result?.access_token
+        }
     }
 
     private suspend fun getCurrentWeather() {

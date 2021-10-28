@@ -311,8 +311,12 @@ class HomeFragment : Fragment() {
         spotifyView: SpotifyView,
         currentTrack: SpotifyCurrentTrack?
     ) {
-        spotifyView.updateView(currentTrack)
-        if (currentTrack == null) viewModel.quote.run { value = value }
-        else viewModel.getSongLyrics(currentTrack)
+        viewModel.viewModelScope.launch(Dispatchers.Main) {
+            spotifyView.updateView(currentTrack)
+
+            if (currentTrack == null)
+                viewModel.songLyrics.value = arrayListOf()
+            else viewModel.getSongLyrics(currentTrack)
+        }
     }
 }

@@ -94,7 +94,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_lyrics"
         android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_150"
+        android:layout_height="@dimen/dp_170"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:overScrollMode="never"
         app:layoutManager=".common.views.StackLayoutManager"

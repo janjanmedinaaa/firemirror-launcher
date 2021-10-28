@@ -23,6 +23,56 @@ object LyricsManager : ILyricsManager {
 
     override suspend fun getSongLyrics(artist: String, title: String, index: Int): Lyrics {
         val multipleArtists = artist.split(",").map { it.trim() }
+        val encodedArtist = formatAZParameter(multipleArtists[index])
+        val encodedTitle = formatAZParameter(title)
+        val lyricsAPI = "$AZ_LYRICS_BASE_URL/$encodedArtist/$encodedTitle.html"
+        val resultData = CompletableDeferred<Lyrics>()
+
+        Log.d(TAG, "$title, $artist $lyricsAPI - AZ Lyrics")
+
+        try {
+            val document = Jsoup.connect(lyricsAPI).get()
+            val contentDivItemList =
+                document.select("div[class='col-xs-12 col-lg-8 text-center'] > div")
+
+            if (contentDivItemList.isNullOrEmpty()) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (index + 1 > multipleArtists.size - 1) {
+                        resultData.complete(
+                            getSongLyricsFromOVH(artist, title, 0)
+                        )
+                    } else {
+                        resultData.complete(
+                            getSongLyrics(artist, title, index + 1)
+                        )
+                    }
+                }
+            } else {
+                val filteredContentDivItemList =
+                    contentDivItemList.filter { it.className().isEmpty() }
+                val lyricsDiv = filteredContentDivItemList.firstOrNull()
+
+                if (lyricsDiv != null) {
+                    resultData.complete(
+                        Lyrics(lyrics = "$lyricsDiv")
+                    )
+                } else {
+                    resultData.complete(
+                        getSongLyricsFromOVH(artist, title, 0)
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            resultData.complete(
+                getSongLyricsFromOVH(artist, title, 0)
+            )
+        }
+
+        return resultData.await()
+    }
+
+    private suspend fun getSongLyricsFromOVH(artist: String, title: String, index: Int): Lyrics {
+        val multipleArtists = artist.split(",").map { it.trim() }
         val encodedArtist = Uri.encode(multipleArtists[index])
         val encodedTitle = Uri.encode(title)
         val lyricsAPI = "$LYRICS_OVH_BASE_URL/$encodedArtist/$encodedTitle"
@@ -40,7 +90,7 @@ object LyricsManager : ILyricsManager {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (index + 1 > multipleArtists.size - 1) {
                             resultData.complete(
-                                getSongLyricsFromAZ(artist, title, 0)
+                                Lyrics(error = "No lyrics found")
                             )
                         } else {
                             resultData.complete(
@@ -74,54 +124,6 @@ object LyricsManager : ILyricsManager {
                 .filterNot { it.startsWith("Paroles") }
                 .toList()
         )
-    }
-
-    suspend fun getSongLyricsFromAZ(artist: String, title: String, index: Int): Lyrics {
-        val multipleArtists = artist.split(",").map { it.trim() }
-        val encodedArtist = formatAZParameter(multipleArtists[index])
-        val encodedTitle = formatAZParameter(title)
-        val lyricsAPI = "$AZ_LYRICS_BASE_URL/$encodedArtist/$encodedTitle.html"
-        val resultData = CompletableDeferred<Lyrics>()
-
-        Log.d(TAG, "$title, $artist $lyricsAPI - AZ Lyrics")
-
-        try {
-            val document = Jsoup.connect(lyricsAPI).get()
-            val contentDivItemList =
-                document.select("div[class='col-xs-12 col-lg-8 text-center'] > div")
-
-            if (contentDivItemList.isNullOrEmpty()) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (index + 1 > multipleArtists.size - 1) {
-                        resultData.complete(Lyrics(error = "No lyrics found"))
-                    } else {
-                        resultData.complete(
-                            getSongLyricsFromAZ(artist, title, index + 1)
-                        )
-                    }
-                }
-            } else {
-                val filteredContentDivItemList =
-                    contentDivItemList.filter { it.className().isEmpty() }
-                val lyricsDiv = filteredContentDivItemList.firstOrNull()
-
-                if (lyricsDiv != null) {
-                    resultData.complete(
-                        Lyrics(lyrics = "$lyricsDiv")
-                    )
-                } else {
-                    resultData.complete(
-                        Lyrics(error = "No lyrics found")
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            resultData.complete(
-                Lyrics(error = "No lyrics found")
-            )
-        }
-
-        return resultData.await()
     }
 
     private fun formatAZParameter(parameter: String): String {
