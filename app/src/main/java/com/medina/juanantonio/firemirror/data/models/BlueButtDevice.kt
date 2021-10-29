@@ -38,6 +38,9 @@ data class BlueButtDevice(
     @Ignore
     var isConnected: Boolean = false
 
+    @Ignore
+    var isPaired: Boolean = false
+
     fun getDeviceName() =
         if (alias.isNotEmpty()) alias else name
 

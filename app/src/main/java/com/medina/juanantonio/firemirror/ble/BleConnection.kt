@@ -19,6 +19,9 @@ class BleConnection(
 ) {
     private var gatt: BluetoothGatt? = null
 
+    val isAutoConnectEnabled
+        get() = bluetoothDevice.bondState == BluetoothDevice.BOND_BONDED
+
     fun setupGattCharacteristic(characteristic: BluetoothGattCharacteristic) {
         with(characteristic) {
             value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
@@ -39,8 +42,7 @@ class BleConnection(
     }
 
     fun pair() {
-        if (bluetoothDevice.bondState != BluetoothDevice.BOND_BONDED)
-            bluetoothDevice.createBond()
+        bluetoothDevice.createBond()
     }
 
     fun unpair() {

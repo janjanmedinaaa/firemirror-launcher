@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 
+
 class BluetoothLEManager(
     private val context: Context,
     private val databaseManager: IDatabaseManager
@@ -26,7 +27,6 @@ class BluetoothLEManager(
         const val BASEUS_WRITE_CHARACTERISTIC_UUID = "2d86686a-53dc-25b3-0c4a-f0e10c8aec21"
         const val BASEUS_NOTIFY_CHARACTERISTIC_UUID = "15005991-b131-3396-014c-664c9867b917"
 
-        private const val OP_CODE_NOTIFY_BUTTON = (0xBA0301).toByte()
         private const val OP_CODE_BUTTON_CLICK = (0xAA08).toByte()
 
         const val TAG = "BluetoothLEManager"
@@ -68,6 +68,8 @@ class BluetoothLEManager(
                                 macAddress = macAddress
                             )
                         blueButtDeviceHashMap[macAddress] = blueButtDevice
+                        createBleConnection(macAddress)
+
                         leScanCallBack.onScanResult(blueButtDeviceHashMap)
                     } catch (e: Exception) {
                         Log.d(TAG, "$e")
@@ -106,7 +108,7 @@ class BluetoothLEManager(
         }
     }
 
-    override suspend fun connectDevice(address: String) {
+    override fun createBleConnection(address: String) {
         if (bleConnectionHashMap.containsKey(address)) return
 
         val device = bluetoothAdapter.getRemoteDevice(address)
@@ -116,24 +118,42 @@ class BluetoothLEManager(
             BluetoothDeviceGattCallback()
         )
         bleConnectionHashMap[address] = bleConnection
+        if (bleConnection.isAutoConnectEnabled)
+            bluetoothLEManagerScope.launch {
+                connectDevice(address)
+            }
+    }
 
-        bleConnection.connect()
-        bleConnection.pair()
+    override suspend fun connectDevice(address: String) {
+        val device = bleConnectionHashMap[address] ?: return
+        device.connect()
+
         val blueButtDevice = blueButtDeviceHashMap[address] ?: return
         databaseManager.addBlueButtDevice(blueButtDevice)
+    }
+
+    override fun bondDevice(address: String) {
+        val device = bleConnectionHashMap[address] ?: return
+        device.pair()
+    }
+
+    override fun unBondDevice(address: String) {
+        val device = bleConnectionHashMap[address] ?: return
+        device.unpair()
     }
 
     override fun disconnectDevice(address: String) {
         val device = bleConnectionHashMap[address] ?: return
         device.disconnect()
         bleConnectionHashMap.remove(address)
+        blueButtDeviceHashMap.remove(address)
     }
 
     override fun writeToDevice(address: String, blueButtCommand: BlueButtCommand) {
         val device = bleConnectionHashMap[address] ?: return
         val byteArray =
             when (blueButtCommand) {
-                BlueButtCommand.NOTIFY_BUTTON -> byteArrayOf(OP_CODE_NOTIFY_BUTTON)
+                BlueButtCommand.NOTIFY_BUTTON -> byteArrayOf((0xBA).toByte(), 0x03, 0x01)
             }
 
         device.sendWriteCommand(byteArray)
@@ -144,6 +164,15 @@ class BluetoothLEManager(
     }
 
     inner class BluetoothDeviceGattCallback : BluetoothGattCallback() {
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
+            Log.d(TAG, "Character Write: $status")
+        }
+
         override fun onConnectionStateChange(
             gatt: BluetoothGatt?,
             status: Int,
@@ -200,8 +229,11 @@ interface IBluetoothLEManager {
 
     fun startScan(_leScanCallBack: BluetoothLeScanCallBack)
     fun stopScan()
+    fun createBleConnection(address: String)
     suspend fun connectDevice(address: String)
     fun disconnectDevice(address: String)
+    fun bondDevice(address: String)
+    fun unBondDevice(address: String)
     fun writeToDevice(address: String, blueButtCommand: BlueButtCommand)
 
     fun refreshDeviceList()
