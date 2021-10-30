@@ -10,4 +10,6 @@
 
     <color name="defaultBackgroundColor">@color/black</color>
     <color name="defaultTextColor">@color/white</color>
+
+    <color name="bluetoothTintColor">#3982F7</color>
 </resources>

@@ -5,10 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import coil.load
+import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.databinding.DialogImageViewerBinding
+import com.medina.juanantonio.firemirror.features.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ImageViewerDialog : DialogFragment() {
 
     companion object {
@@ -16,6 +21,7 @@ class ImageViewerDialog : DialogFragment() {
     }
 
     private var binding: DialogImageViewerBinding by autoCleared()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,6 +34,11 @@ class ImageViewerDialog : DialogFragment() {
             false
         )
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mainViewModel.currentScreenLayout = R.layout.dialog_image_viewer
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

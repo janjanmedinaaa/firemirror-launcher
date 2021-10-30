@@ -21,8 +21,8 @@ interface BlueButtDeviceDao {
 
     @Query(
         "UPDATE blueButtDevice SET alias = :alias, triggerRequestOff = " +
-                ":triggerRequestOff, triggerRequestOn = :triggerRequestOn " +
-                "WHERE macAddress = :macAddress"
+            ":triggerRequestOff, triggerRequestOn = :triggerRequestOn " +
+            "WHERE macAddress = :macAddress"
     )
     suspend fun updateDeviceDetails(
         macAddress: String,
@@ -34,11 +34,14 @@ interface BlueButtDeviceDao {
     @Query("UPDATE blueButtDevice SET clickCount = clickCount + 1 WHERE macAddress = :macAddress")
     suspend fun updateClickCount(macAddress: String)
 
-    @Query("UPDATE blueButtDevice SET switchMode = :switchModeStatus  WHERE macAddress = :macAddress")
+    @Query("UPDATE blueButtDevice SET switchMode = :switchModeStatus WHERE macAddress = :macAddress")
     suspend fun activateSwitchMode(macAddress: String, switchModeStatus: Boolean?)
 
     @Query("UPDATE blueButtDevice SET switchMode = NOT switchMode WHERE macAddress = :macAddress")
     suspend fun updateSwitchModeStatus(macAddress: String)
+
+    @Query("UPDATE blueButtDevice SET isPreviouslyConnected = :isPreviouslyConnected WHERE macAddress = :macAddress")
+    suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)
 
     @Query("DELETE FROM blueButtDevice WHERE macAddress = :macAddress")
     suspend fun deleteDevice(macAddress: String)

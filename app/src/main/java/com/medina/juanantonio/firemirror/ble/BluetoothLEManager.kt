@@ -11,11 +11,12 @@ import android.os.ParcelUuid
 import android.util.Log
 import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
-import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.set
 
 class BluetoothLEManager(
     private val context: Context,
@@ -70,7 +71,7 @@ class BluetoothLEManager(
                         blueButtDeviceHashMap[macAddress] = blueButtDevice
                         createBleConnection(macAddress)
 
-                        leScanCallBack.onScanResult(blueButtDeviceHashMap)
+                        refreshDeviceList()
                     } catch (e: Exception) {
                         Log.d(TAG, "$e")
                     }
@@ -90,7 +91,7 @@ class BluetoothLEManager(
         scanning = true
 
         if (!::leScanCallBack.isInitialized) leScanCallBack = _leScanCallBack
-        leScanCallBack.onScanResult(blueButtDeviceHashMap)
+        refreshDeviceList()
         bluetoothLeScanner?.startScan(
             listOf(baseusScanFilter),
             scanSettings,
@@ -109,6 +110,7 @@ class BluetoothLEManager(
     }
 
     override fun createBleConnection(address: String) {
+        Log.d(TAG, "$address createBleConnection")
         if (bleConnectionHashMap.containsKey(address)) return
 
         val device = bluetoothAdapter.getRemoteDevice(address)
@@ -118,18 +120,27 @@ class BluetoothLEManager(
             BluetoothDeviceGattCallback()
         )
         bleConnectionHashMap[address] = bleConnection
-        if (bleConnection.isAutoConnectEnabled)
+
+        val blueButtDevice = blueButtDeviceHashMap[address] ?: return
+        if (blueButtDevice.isPreviouslyConnected)
             bluetoothLEManagerScope.launch {
                 connectDevice(address)
             }
     }
 
     override suspend fun connectDevice(address: String) {
-        val device = bleConnectionHashMap[address] ?: return
-        device.connect()
+        Log.d(TAG, "$address connectDevice")
+
+        bleConnectionHashMap[address] ?: createBleConnection(address)
+        val device = bleConnectionHashMap[address]
+        device?.connect()
+
+        blueButtDeviceHashMap[address]?.isDeviceLoading = true
+        refreshDeviceList()
 
         val blueButtDevice = blueButtDeviceHashMap[address] ?: return
         databaseManager.addBlueButtDevice(blueButtDevice)
+        databaseManager.updateLastConnectionStatus(address, true)
     }
 
     override fun bondDevice(address: String) {
@@ -142,11 +153,16 @@ class BluetoothLEManager(
         device.unpair()
     }
 
-    override fun disconnectDevice(address: String) {
+    override suspend fun disconnectDevice(address: String) {
+        Log.d(TAG, "$address disconnectDevice")
+
         val device = bleConnectionHashMap[address] ?: return
         device.disconnect()
-        bleConnectionHashMap.remove(address)
-        blueButtDeviceHashMap.remove(address)
+
+        blueButtDeviceHashMap[address]?.isDeviceLoading = true
+        refreshDeviceList()
+
+        databaseManager.updateLastConnectionStatus(address, false)
     }
 
     override fun writeToDevice(address: String, blueButtCommand: BlueButtCommand) {
@@ -160,6 +176,7 @@ class BluetoothLEManager(
     }
 
     override fun refreshDeviceList() {
+        Log.d(TAG, "refreshDeviceList")
         leScanCallBack.onScanResult(blueButtDeviceHashMap)
     }
 
@@ -180,19 +197,30 @@ class BluetoothLEManager(
         ) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    blueButtDeviceHashMap[gatt?.device?.address]?.isConnected = true
-                    Log.d(TAG, "${gatt?.device?.address} CONNECTED")
+                    gatt?.device?.address?.let {
+                        blueButtDeviceHashMap[it]?.apply {
+                            isConnected = true
+                            isDeviceLoading = false
+                        }
+
+                        Log.d(TAG, "$it STATE_CONNECTED")
+                    }
                     gatt?.discoverServices()
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     gatt?.close()
                     gatt?.device?.address?.let {
-                        blueButtDeviceHashMap[it]?.isConnected = false
+                        blueButtDeviceHashMap[it]?.apply {
+                            isConnected = false
+                            isDeviceLoading = false
+                        }
                         bleConnectionHashMap.remove(it)
+
+                        Log.d(TAG, "$it STATE_DISCONNECTED")
                     }
                 }
             }
-            leScanCallBack.onScanResult(blueButtDeviceHashMap)
+            refreshDeviceList()
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
@@ -231,7 +259,7 @@ interface IBluetoothLEManager {
     fun stopScan()
     fun createBleConnection(address: String)
     suspend fun connectDevice(address: String)
-    fun disconnectDevice(address: String)
+    suspend fun disconnectDevice(address: String)
     fun bondDevice(address: String)
     fun unBondDevice(address: String)
     fun writeToDevice(address: String, blueButtCommand: BlueButtCommand)

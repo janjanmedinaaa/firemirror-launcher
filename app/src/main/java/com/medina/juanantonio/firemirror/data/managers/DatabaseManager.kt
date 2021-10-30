@@ -45,6 +45,13 @@ class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
         blueButtDeviceDao.updateSwitchModeStatus(macAddress)
     }
 
+    override suspend fun updateLastConnectionStatus(
+        macAddress: String,
+        isPreviouslyConnected: Boolean
+    ) {
+        blueButtDeviceDao.updateLastConnectionStatus(macAddress, isPreviouslyConnected)
+    }
+
     override suspend fun deleteDevice(macAddress: String) {
         return blueButtDeviceDao.deleteDevice(macAddress)
     }
@@ -60,8 +67,10 @@ interface IDatabaseManager {
         triggerRequestOff: TriggerRequest? = null,
         triggerRequestOn: TriggerRequest? = null
     )
+
     suspend fun updateClickCount(macAddress: String)
     suspend fun activateSwitchMode(macAddress: String, switchModeStatus: Boolean?)
     suspend fun updateSwitchModeStatus(macAddress: String)
+    suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)
     suspend fun deleteDevice(macAddress: String)
 }

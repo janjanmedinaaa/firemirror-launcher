@@ -3,12 +3,16 @@ package com.medina.juanantonio.firemirror.common.views
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -16,17 +20,13 @@ import coil.load
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.extensions.animateDimensions
 import com.medina.juanantonio.firemirror.common.extensions.animateTextSize
+import com.medina.juanantonio.firemirror.data.models.listdisplay.*
+import com.medina.juanantonio.firemirror.databinding.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.collections.ArrayList
 import kotlin.random.Random
-import android.widget.RelativeLayout
-import androidx.core.view.postDelayed
-import androidx.core.view.updatePadding
-import com.medina.juanantonio.firemirror.data.models.listdisplay.*
-import com.medina.juanantonio.firemirror.databinding.*
 
 class ListDisplayView(
     context: Context,
@@ -98,7 +98,7 @@ class ListDisplayView(
 
     inner class ListDisplayAdapter(
         private val itemList: ArrayList<ListDisplayItem>,
-        private val onClickAction: ((ListDisplayItem, ViewBinding) -> Unit)? = {_, _ -> },
+        private val onClickAction: ((ListDisplayItem, ViewBinding) -> Unit)? = { _, _ -> },
         private val textAlignment: Int = TEXT_ALIGNMENT_TEXT_START,
         private val onFocusChanged: ((Int) -> Unit) = {}
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -196,15 +196,32 @@ class ListDisplayView(
                 viewList[position] = binding
                 binding.imageView.apply {
                     id = Random.nextInt(100000, 999999)
-                    load(item.imageUrl) {
-                        listener(
-                            onSuccess = { _, _ ->
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    delay(500)
-                                    imageDimensionsMap[id] = Pair(measuredWidth, measuredHeight)
+                    item.imageUrl?.let {
+                        load(it) {
+                            listener(
+                                onSuccess = { _, _ ->
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        delay(500)
+                                        imageDimensionsMap[id] =
+                                            Pair(measuredWidth, measuredHeight)
+                                    }
                                 }
-                            }
+                            )
+                        }
+                    }
+
+                    item.drawable?.let {
+                        setImageDrawable(
+                            ResourcesCompat.getDrawable(
+                                resources,
+                                it,
+                                null
+                            )
                         )
+
+                        postDelayed(500) {
+                            imageDimensionsMap[id] = Pair(measuredWidth, measuredHeight)
+                        }
                     }
 
                     val params = layoutParams as RelativeLayout.LayoutParams

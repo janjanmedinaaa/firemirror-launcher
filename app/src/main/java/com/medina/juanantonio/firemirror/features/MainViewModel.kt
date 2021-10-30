@@ -11,4 +11,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor() : ViewModel() {
     val dispatchKeyEvent = MutableLiveData<KeyEvent>()
     val authorizationResponse = MutableLiveData<AuthorizationResponse>()
+
+    var currentScreenLayout = -1
 }

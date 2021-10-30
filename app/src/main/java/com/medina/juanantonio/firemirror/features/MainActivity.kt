@@ -1,10 +1,13 @@
 package com.medina.juanantonio.firemirror.features
 
+import android.Manifest
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.viewModels
+import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
+import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
 import com.medina.juanantonio.firemirror.databinding.ActivityMainBinding
@@ -27,14 +30,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+    }
 
-//        TODO: Start Bluetooth LE Service
-//        runWithPermissions(
-//            Manifest.permission.ACCESS_FINE_LOCATION,
-//            Manifest.permission.ACCESS_COARSE_LOCATION
-//        ) {
-//            bluetoothLEServiceManager.startBluetoothLEService()
-//        }
+    override fun onResume() {
+        super.onResume()
+
+        runWithPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) {
+            bluetoothLEServiceManager.startBluetoothLEService()
+        }
     }
 
     /**
@@ -49,6 +55,9 @@ class MainActivity : AppCompatActivity() {
      * 90 - Play Forward
      */
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
+        if (viewModel.currentScreenLayout != R.layout.fragment_home)
+            return super.dispatchKeyEvent(event)
+
         if (event?.keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_UP ||

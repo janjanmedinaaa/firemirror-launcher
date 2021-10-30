@@ -1,8 +1,5 @@
 package com.medina.juanantonio.firemirror.features.home
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -13,13 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import coil.load
 import com.medina.juanantonio.firemirror.R
-import com.medina.juanantonio.firemirror.ble.BluetoothLEService
-import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
-import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
@@ -32,7 +25,6 @@ import com.medina.juanantonio.firemirror.data.managers.FocusManager
 import com.medina.juanantonio.firemirror.data.managers.HolidayManager
 import com.medina.juanantonio.firemirror.data.managers.IAppManager
 import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
-import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
@@ -59,25 +51,6 @@ class HomeFragment : Fragment() {
     private lateinit var focusManager: FocusManager
     private lateinit var lyricsAdapter: LyricsAdapter
 
-    private val localBroadcastManager by lazy {
-        LocalBroadcastManager.getInstance(requireContext())
-    }
-
-    private val bluetoothLeServiceReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            @Suppress("UNCHECKED_CAST")
-            val scannedDevices = intent?.getSerializableExtra(
-                BluetoothLEService.BLUE_BUTT_DEVICES
-            ) as? HashMap<String, BlueButtDevice>
-        }
-    }
-
-    @Inject
-    lateinit var bluetoothLEServiceManager: BluetoothLEServiceManager
-
-    @Inject
-    lateinit var bluetoothLeManager: IBluetoothLEManager
-
     @Inject
     lateinit var appManager: IAppManager
 
@@ -102,12 +75,6 @@ class HomeFragment : Fragment() {
             layoutManager = stackLayoutManager
             adapter = lyricsAdapter
         }
-
-//        TODO: Register Receiver
-//        localBroadcastManager.registerReceiver(
-//            bluetoothLeServiceReceiver,
-//            IntentFilter(BluetoothLEService.SCANNED_DEVICES)
-//        )
 
         binding.listDisplayUpcomingEvents.initialize(
             title = getString(R.string.upcoming),
@@ -139,6 +106,20 @@ class HomeFragment : Fragment() {
             }
         )
 
+        binding.listDisplayBluetoothIcon.initialize(
+            itemList = arrayListOf(
+                ImageListDisplayItem(
+                    drawable = R.drawable.ic_bluetooth
+                )
+            ),
+            noBottomPadding = true,
+            onClickAction = { _, _ ->
+                findNavController().navigate(
+                    HomeFragmentDirections.actionHomeFragmentToBluetoothDevicesListDialog()
+                )
+            }
+        )
+
         binding.listDisplayViewApps.textAlignment = TEXT_ALIGNMENT_TEXT_END
         binding.listDisplayViewApps.initialize(
             title = getString(R.string.applications),
@@ -166,7 +147,7 @@ class HomeFragment : Fragment() {
             onClickAction = { item, _ ->
                 findNavController().navigate(
                     HomeFragmentDirections.actionHomeFragmentToImageViewerDialog(
-                        imageUrlArg = ((item as ImageListDisplayItem).imageUrl)
+                        imageUrlArg = ((item as ImageListDisplayItem).imageUrl ?: "")
                     )
                 )
             }
@@ -177,6 +158,7 @@ class HomeFragment : Fragment() {
                 arrayListOf(
                     binding.listDisplayUpcomingEvents,
                     binding.listDisplaySpotify,
+                    binding.listDisplayBluetoothIcon,
                     binding.listDisplayGuestWifiQr,
                     binding.listDisplayViewApps
                 )
@@ -189,6 +171,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        mainViewModel.currentScreenLayout = R.layout.fragment_home
         viewModel.setupWeatherTimerTask()
         viewModel.requestUserCurrentTrack(
             activity = requireActivity(),

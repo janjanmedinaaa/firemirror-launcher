@@ -22,4 +22,6 @@
     <string name="upcoming">Upcoming</string>
     <string name="applications">Applications</string>
     <string name="title_android_auth">Android Auth</string>
+
+    <string name="click_count_format">Click count: %d</string>
 </resources>

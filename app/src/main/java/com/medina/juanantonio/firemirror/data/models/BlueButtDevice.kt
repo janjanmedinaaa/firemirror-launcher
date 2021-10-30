@@ -35,8 +35,13 @@ data class BlueButtDevice(
     // Boolean values shows the current status of the Switch
     var switchMode: Boolean? = null
 
+    var isPreviouslyConnected: Boolean = false
+
     @Ignore
     var isConnected: Boolean = false
+
+    @Ignore
+    var isDeviceLoading: Boolean = false
 
     @Ignore
     var isPaired: Boolean = false

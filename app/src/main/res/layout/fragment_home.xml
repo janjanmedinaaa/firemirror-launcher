@@ -33,6 +33,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Sunday, August 14, 2021" />
 
+    <com.medina.juanantonio.firemirror.common.views.ListDisplayView
+        android:id="@+id/list_display_bluetooth_icon"
+        android:layout_width="@dimen/dp_32"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_4"
+        android:layout_marginTop="-5dp"
+        app:layout_constraintStart_toEndOf="@id/text_clock_date"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextClock
         android:id="@+id/text_clock_time"
         android:layout_width="wrap_content"
@@ -94,7 +103,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_lyrics"
         android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_170"
+        android:layout_height="@dimen/dp_190"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:overScrollMode="never"
         app:layoutManager=".common.views.StackLayoutManager"
