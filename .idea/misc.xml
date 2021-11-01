@@ -29,6 +29,7 @@
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.3148148148148148" />
         <entry key="app/src/main/res/layout/item_bluetooth_device.xml" value="0.375" />
         <entry key="app/src/main/res/layout/item_list_display_bluetooth.xml" value="0.23574468085106384" />
+        <entry key="app/src/main/res/layout/item_list_display_default.xml" value="0.1984375" />
         <entry key="app/src/main/res/layout/item_list_display_icon_label.xml" value="0.21041666666666667" />
         <entry key="app/src/main/res/layout/item_list_display_image.xml" value="0.14447463768115942" />
         <entry key="app/src/main/res/layout/item_lyrics.xml" value="0.375" />

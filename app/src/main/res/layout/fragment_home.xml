@@ -33,15 +33,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Sunday, August 14, 2021" />
 
-    <com.medina.juanantonio.firemirror.common.views.ListDisplayView
-        android:id="@+id/list_display_bluetooth_icon"
-        android:layout_width="@dimen/dp_32"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/dp_4"
-        android:layout_marginTop="-5dp"
-        app:layout_constraintStart_toEndOf="@id/text_clock_date"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextClock
         android:id="@+id/text_clock_time"
         android:layout_width="wrap_content"
@@ -79,10 +70,18 @@
         tools:text="PM" />
 
     <com.medina.juanantonio.firemirror.common.views.ListDisplayView
+        android:id="@+id/list_display_bluetooth_devices_label"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_32"
+        app:layout_constraintEnd_toStartOf="@id/guideline_start"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_clock_am_pm" />
+
+    <com.medina.juanantonio.firemirror.common.views.ListDisplayView
         android:id="@+id/list_display_upcoming_events"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:layout_marginTop="@dimen/dp_8"
+        android:layout_marginTop="@dimen/dp_40"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_start"
         app:layout_constraintHeight_max="@dimen/dp_200"

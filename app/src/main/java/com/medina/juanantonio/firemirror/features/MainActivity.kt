@@ -10,6 +10,7 @@ import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
+import com.medina.juanantonio.firemirror.data.receivers.RestartReceiver
 import com.medina.juanantonio.firemirror.databinding.ActivityMainBinding
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        RestartReceiver.startAlarm(applicationContext)
     }
 
     override fun onResume() {

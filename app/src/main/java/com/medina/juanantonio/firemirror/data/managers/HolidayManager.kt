@@ -12,7 +12,7 @@ object HolidayManager : IHolidayManager {
             },
             Holiday(name = "Chinese New Year", constant = false).apply {
                 month = 2
-                dayOfMonth = 12
+                dayOfMonth = 1
             },
             Holiday(name = "EDSA Revolution Anniversary", constant = true).apply {
                 month = 2
@@ -20,15 +20,15 @@ object HolidayManager : IHolidayManager {
             },
             Holiday(name = "Maundy Thursday", constant = false).apply {
                 month = 4
-                dayOfMonth = 1
+                dayOfMonth = 14
             },
             Holiday(name = "Good Friday", constant = false).apply {
                 month = 4
-                dayOfMonth = 2
+                dayOfMonth = 15
             },
             Holiday(name = "Black Saturday", constant = false).apply {
                 month = 4
-                dayOfMonth = 3
+                dayOfMonth = 16
             },
             Holiday(name = "Araw ng Kagitingan", constant = true).apply {
                 month = 4
@@ -48,7 +48,7 @@ object HolidayManager : IHolidayManager {
             },
             Holiday(name = "National Heroes' Day", constant = true).apply {
                 month = 8
-                dayOfMonth = 30
+                dayOfMonth = 29
             },
             Holiday(name = "All Saints' Day", constant = true).apply {
                 month = 11

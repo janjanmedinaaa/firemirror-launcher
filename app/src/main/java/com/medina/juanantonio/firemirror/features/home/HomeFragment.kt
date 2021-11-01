@@ -106,10 +106,11 @@ class HomeFragment : Fragment() {
             }
         )
 
-        binding.listDisplayBluetoothIcon.initialize(
+        binding.listDisplayBluetoothDevicesLabel.initialize(
             itemList = arrayListOf(
-                ImageListDisplayItem(
-                    drawable = R.drawable.ic_bluetooth
+                DefaultListDisplayItem(
+                    label = "Manage Bluetooth Devices",
+                    value = "1"
                 )
             ),
             noBottomPadding = true,
@@ -156,9 +157,9 @@ class HomeFragment : Fragment() {
         binding.listDisplayUpcomingEvents.post {
             focusManager.setupViewFocusList(
                 arrayListOf(
+                    binding.listDisplayBluetoothDevicesLabel,
                     binding.listDisplayUpcomingEvents,
                     binding.listDisplaySpotify,
-                    binding.listDisplayBluetoothIcon,
                     binding.listDisplayGuestWifiQr,
                     binding.listDisplayViewApps
                 )
