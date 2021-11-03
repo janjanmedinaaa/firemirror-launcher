@@ -63,7 +63,7 @@ class RestartReceiver : HiltBroadcastReceiver() {
             alarm.setInexactRepeating(
                 AlarmManager.RTC_WAKEUP,
                 System.currentTimeMillis(),
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                AlarmManager.INTERVAL_HOUR,
                 pendingIntent
             )
         }

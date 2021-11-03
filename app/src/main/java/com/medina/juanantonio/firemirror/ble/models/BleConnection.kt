@@ -1,23 +1,19 @@
-package com.medina.juanantonio.firemirror.ble
+package com.medina.juanantonio.firemirror.ble.models
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
 import android.bluetooth.BluetoothGattDescriptor
 import android.content.Context
-import com.medina.juanantonio.firemirror.ble.BluetoothLEManager.Companion.BASEUS_SERVICE_UUID
-import com.medina.juanantonio.firemirror.ble.BluetoothLEManager.Companion.BASEUS_WRITE_CHARACTERISTIC_UUID
 import com.medina.juanantonio.firemirror.common.extensions.removeBond
-import java.util.*
 
-class BleConnection(
+open class BleConnection(
     private val context: Context,
     private val bluetoothDevice: BluetoothDevice,
     private val gattCallback: BluetoothGattCallback
 ) {
-    private var gatt: BluetoothGatt? = null
+    protected var gatt: BluetoothGatt? = null
 
     fun setupGattCharacteristic(characteristic: BluetoothGattCharacteristic) {
         with(characteristic) {
@@ -46,13 +42,5 @@ class BleConnection(
         bluetoothDevice.removeBond()
     }
 
-    fun sendWriteCommand(command: ByteArray) {
-        gatt?.getService(UUID.fromString(BASEUS_SERVICE_UUID))
-            ?.getCharacteristic(UUID.fromString(BASEUS_WRITE_CHARACTERISTIC_UUID))
-            ?.run characteristic@{
-                writeType = WRITE_TYPE_DEFAULT
-                value = command
-                gatt?.writeCharacteristic(this@characteristic)
-            }
-    }
+    open fun sendWriteCommand(command: ByteArray) {}
 }

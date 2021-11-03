@@ -9,6 +9,9 @@ import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
+import com.medina.juanantonio.firemirror.ble.models.BLEDOMBleConnection
+import com.medina.juanantonio.firemirror.ble.models.BaseusBleConnection
+import com.medina.juanantonio.firemirror.ble.models.BleConnection
 import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +31,9 @@ class BluetoothLEManager(
         const val BASEUS_WRITE_CHARACTERISTIC_UUID = "2d86686a-53dc-25b3-0c4a-f0e10c8aec21"
         const val BASEUS_NOTIFY_CHARACTERISTIC_UUID = "15005991-b131-3396-014c-664c9867b917"
 
+        const val BLEDOM_SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
+        const val BLEDOM_WRITE_CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
+
         private const val OP_CODE_BUTTON_CLICK = (0xAA08).toByte()
 
         const val TAG = "BluetoothLEManager"
@@ -40,12 +46,20 @@ class BluetoothLEManager(
     private val scanSettings =
         ScanSettings
             .Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
             .build()
+
     private val baseusScanFilter =
         ScanFilter
             .Builder()
             .setServiceUuid(ParcelUuid.fromString(BASEUS_SERVICE_UUID))
+            .build()
+
+    // The 3 spaces at the end are required based on the actual device's name
+    private val bleDomScanFilter =
+        ScanFilter
+            .Builder()
+            .setDeviceName("ELK-BLEDOM   ")
             .build()
 
     internal val bleConnectionHashMap = HashMap<String, BleConnection>()
@@ -64,7 +78,7 @@ class BluetoothLEManager(
                     try {
                         val blueButtDevice =
                             databaseManager.getDevice(macAddress) ?: BlueButtDevice(
-                                name = result.device.name,
+                                name = result.device.name ?: macAddress,
                                 alias = "",
                                 macAddress = macAddress
                             )
@@ -93,7 +107,7 @@ class BluetoothLEManager(
         if (!::leScanCallBack.isInitialized) leScanCallBack = _leScanCallBack
         refreshDeviceList()
         bluetoothLeScanner?.startScan(
-            listOf(baseusScanFilter),
+            listOf(baseusScanFilter, bleDomScanFilter),
             scanSettings,
             scanCallback
         )
@@ -114,11 +128,20 @@ class BluetoothLEManager(
         if (bleConnectionHashMap.containsKey(address)) return
 
         val device = bluetoothAdapter.getRemoteDevice(address)
-        val bleConnection = BleConnection(
-            context,
-            device,
-            BluetoothDeviceGattCallback()
-        )
+        val bleConnection =
+            if (device.name.startsWith("ELK-BLEDOM")) {
+                BLEDOMBleConnection(
+                    context,
+                    device,
+                    BluetoothDeviceGattCallback()
+                )
+            } else {
+                BaseusBleConnection(
+                    context,
+                    device,
+                    BluetoothDeviceGattCallback()
+                )
+            }
         bleConnectionHashMap[address] = bleConnection
 
         val blueButtDevice = blueButtDeviceHashMap[address] ?: return
@@ -156,13 +179,13 @@ class BluetoothLEManager(
     override suspend fun disconnectDevice(address: String) {
         Log.d(TAG, "$address disconnectDevice")
 
+        databaseManager.updateLastConnectionStatus(address, false)
+
         val device = bleConnectionHashMap[address] ?: return
         device.disconnect()
 
         blueButtDeviceHashMap[address]?.isDeviceLoading = true
         refreshDeviceList()
-
-        databaseManager.updateLastConnectionStatus(address, false)
     }
 
     override fun writeToDevice(address: String, blueButtCommand: BlueButtCommand) {
@@ -224,6 +247,12 @@ class BluetoothLEManager(
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            gatt?.services?.forEach { service ->
+                service.characteristics?.forEach { characteristic ->
+                    Log.d(TAG, "${gatt.device?.name} ${service.uuid} ${characteristic.uuid}")
+                }
+            }
+
             gatt?.getService(UUID.fromString(BASEUS_SERVICE_UUID))
                 ?.getCharacteristic(UUID.fromString(BASEUS_NOTIFY_CHARACTERISTIC_UUID))
                 ?.run characteristic@{
