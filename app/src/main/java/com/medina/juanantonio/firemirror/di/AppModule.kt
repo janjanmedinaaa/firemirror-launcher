@@ -7,6 +7,7 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.data.database.FireMirrorDb
 import com.medina.juanantonio.firemirror.data.managers.*
+import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -71,5 +72,13 @@ class AppModule {
         bluetoothLEManager: IBluetoothLEManager
     ): BluetoothLEServiceManager {
         return BluetoothLEServiceManager(context, bluetoothLEManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFireMirrorServer(
+        @ApplicationContext context: Context
+    ): FireMirrorServer {
+        return FireMirrorServer(context, 8080)
     }
 }

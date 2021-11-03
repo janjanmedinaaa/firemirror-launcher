@@ -12,6 +12,7 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
 import com.medina.juanantonio.firemirror.data.receivers.RestartReceiver
 import com.medina.juanantonio.firemirror.databinding.ActivityMainBinding
+import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var bluetoothLEServiceManager: BluetoothLEServiceManager
 
+    @Inject
+    lateinit var fireMirrorServer: FireMirrorServer
+
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         RestartReceiver.startAlarm(applicationContext)
+        fireMirrorServer.start()
     }
 
     override fun onResume() {
@@ -95,6 +100,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun finish() {
         bluetoothLEServiceManager.stopBluetoothLEService()
+        fireMirrorServer.stop()
         super.finish()
     }
 }

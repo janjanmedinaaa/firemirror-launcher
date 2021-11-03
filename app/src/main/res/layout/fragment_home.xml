@@ -102,7 +102,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_lyrics"
         android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_190"
+        android:layout_height="@dimen/dp_0"
         android:layout_marginHorizontal="@dimen/default_margin"
         android:overScrollMode="never"
         app:layoutManager=".common.views.StackLayoutManager"
@@ -110,7 +110,8 @@
         app:layout_constraintEnd_toStartOf="@id/guideline_end"
         app:layout_constraintStart_toEndOf="@id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias=".8"
+        app:layout_constraintHeight_percent=".5"
+        app:layout_constraintVertical_bias="1"
         tools:listitem="@layout/item_lyrics" />
 
     <androidx.appcompat.widget.AppCompatTextView

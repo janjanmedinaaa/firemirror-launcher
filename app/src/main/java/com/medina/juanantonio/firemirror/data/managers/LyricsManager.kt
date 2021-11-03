@@ -106,7 +106,8 @@ object LyricsManager : ILyricsManager {
     }
 
     override fun formatLyrics(lyrics: String): ArrayList<String> {
-        val regexSingerPart = """\[(.*?)]""".toRegex()
+        val regexSingerPart1= """\[(.*?)]""".toRegex()
+        val regexSingerPart2 = """<i>\[(.*?):]</i>""".toRegex()
         return ArrayList(
             lyrics
                 .split("\n")
@@ -120,14 +121,15 @@ object LyricsManager : ILyricsManager {
                         .trim()
                 }
                 .filter { it.isNotEmpty() }
-                .filterNot { regexSingerPart.matches(it) }
+                .filterNot { regexSingerPart1.matches(it) }
+                .filterNot { regexSingerPart2.matches(it) }
                 .filterNot { it.startsWith("Paroles") }
                 .toList()
         )
     }
 
     private fun formatAZParameter(parameter: String): String {
-        val regexSpecialChars = """[<(\[{^@'\-=${'$'}!|\]}):&%_#;",?*+.> ]""".toRegex()
+        val regexSpecialChars = """[<(\[{^@'\-=${'$'}!|\]}):&%_#;",?*+./\\> ]""".toRegex()
         return parameter
             .split("feat.")
             .first()

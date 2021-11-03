@@ -108,6 +108,9 @@ dependencies {
     // Spotify
     implementation 'com.spotify.android:auth:1.2.6'
 
+    // HTTP Server
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+
     implementation 'com.github.quickpermissions:quickpermissions-kotlin:0.4.1'
 
     testImplementation 'junit:junit:4.13.2'
