@@ -1,4 +1,4 @@
-package com.medina.juanantonio.firemirror.data.managers
+package com.medina.juanantonio.firemirror.data.commander
 
 import androidx.annotation.IntRange
 
@@ -116,11 +116,11 @@ object BLEDOMCommander {
     }
 
         private fun setupCommandByteArray(
-        commandId: Byte,
-        commandSubId: Byte,
-        commandArg1: Byte = CommandBytes.COMMAND_FILL_BYTE,
-        commandArg2: Byte = CommandBytes.COMMAND_FILL_BYTE,
-        commandArg3: Byte = CommandBytes.COMMAND_FILL_BYTE
+            commandId: Byte,
+            commandSubId: Byte,
+            commandArg1: Byte = CommandBytes.COMMAND_FILL_BYTE,
+            commandArg2: Byte = CommandBytes.COMMAND_FILL_BYTE,
+            commandArg3: Byte = CommandBytes.COMMAND_FILL_BYTE
     ): ByteArray {
         return byteArrayOf(
             CommandBytes.COMMAND_START_BYTE,
