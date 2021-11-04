@@ -1,14 +1,14 @@
 <resources>
     <string name="app_name">FireMirror</string>
     <string name="qr_url">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
-    <string name="server_url_format">http://%s:%d/%d</string>
+    <string name="server_url_format">http://%s:%d/%s</string>
     <string name="weather_icon_url">https://openweathermap.org/img/wn/%s@2x.png</string>
 
     <!-- BlueButt Scanner Service -->
-    <string name="blue_butt_scanner_channel_name">BlueButt Device Scanner</string>
-    <string name="blue_butt_scanner_channel_description">Scans available BlueButt Devices</string>
-    <string name="blue_butt_scanner_notification_content_title">Scanning BlueButt Devices</string>
-    <string name="blue_butt_scanner_notification_content_text">BlueButt Device Scanner is currently running in the background.</string>
+    <string name="blue_butt_scanner_channel_name">FireMirror Bluetooth Device Scanner</string>
+    <string name="blue_butt_scanner_channel_description">Scans available FireMirror Bluetooth Devices</string>
+    <string name="blue_butt_scanner_notification_content_title">Scanning FireMirror Bluetooth Devices</string>
+    <string name="blue_butt_scanner_notification_content_text">FireMirror Bluetooth Device Scanner is currently running in the background.</string>
     <string name="blue_butt_trigger_channel_name">BlueButt Device Trigger</string>
     <string name="blue_butt_trigger_channel_description">Runs when A Blue Butt Device is Triggered</string>
     <string name="blue_butt_trigger_notification_content_title">BlueButt Device Triggered</string>

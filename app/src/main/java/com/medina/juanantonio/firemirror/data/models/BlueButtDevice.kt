@@ -1,28 +1,26 @@
 package com.medina.juanantonio.firemirror.data.models
 
-import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import kotlinx.android.parcel.Parcelize
 
-@Parcelize
 @Entity
-data class BlueButtDevice(
-    val name: String,
-    var alias: String,
-    val macAddress: String
-) : Parcelable {
+class BlueButtDevice(
+    name: String,
+    alias: String
+) : BleDevice(name, alias) {
 
-    companion object {
+    @PrimaryKey
+    override var macAddress: String = ""
 
-        fun default(): BlueButtDevice {
-            return BlueButtDevice("", "", "")
-        }
-    }
+    @Ignore
+    override var isConnected: Boolean = false
 
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = 1
+    @Ignore
+    override var isDeviceLoading: Boolean = false
+
+    @Ignore
+    override var isPaired: Boolean = false
 
     var clickCount: Int = 0
 
@@ -34,20 +32,6 @@ data class BlueButtDevice(
     // Switch Mode NULL means Switch Mode is Deactivated
     // Boolean values shows the current status of the Switch
     var switchMode: Boolean? = null
-
-    var isPreviouslyConnected: Boolean = false
-
-    @Ignore
-    var isConnected: Boolean = false
-
-    @Ignore
-    var isDeviceLoading: Boolean = false
-
-    @Ignore
-    var isPaired: Boolean = false
-
-    fun getDeviceName() =
-        if (alias.isNotEmpty()) alias else name
 
     /**
      * Previous implementation depends on switch Mode having a nullable value

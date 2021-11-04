@@ -4,13 +4,16 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.medina.juanantonio.firemirror.BuildConfig
+import com.medina.juanantonio.firemirror.data.database.dao.BLEDOMDeviceDao
 import com.medina.juanantonio.firemirror.data.database.dao.BlueButtDeviceDao
 import com.medina.juanantonio.firemirror.data.database.dao.FireMirrorTypeConverters
+import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 
 @Database(
     entities = [
-        BlueButtDevice::class
+        BlueButtDevice::class,
+        BLEDOMDevice::class
     ],
     version = BuildConfig.VERSION_CODE,
     exportSchema = false
@@ -18,4 +21,5 @@ import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 @TypeConverters(FireMirrorTypeConverters::class)
 abstract class FireMirrorDb : RoomDatabase() {
     abstract fun blueButtDeviceDao(): BlueButtDeviceDao
+    abstract fun bleDOMDeviceDao(): BLEDOMDeviceDao
 }

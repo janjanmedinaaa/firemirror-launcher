@@ -11,7 +11,8 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.medina.juanantonio.firemirror.R
-import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
+import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
+import com.medina.juanantonio.firemirror.data.models.BleDevice
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
         const val START_SERVICE = "START_SERVICE"
         const val STOP_SERVICE = "STOP_SERVICE"
         const val SCANNED_DEVICES = "SCANNED_DEVICES"
-        const val BLUE_BUTT_DEVICES = "BLUE_BUTT_DEVICES"
+        const val BLE_DEVICES = "BLE_DEVICES"
     }
 
     private val localBroadcastManager by lazy {
@@ -41,7 +42,7 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
     lateinit var bluetoothLEManager: IBluetoothLEManager
 
     @Inject
-    lateinit var databaseManager: IDatabaseManager
+    lateinit var blueButtDevicesManager: IBlueButtDevicesManager
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.getStringExtra(SERVICE_ACTION) ?: "") {
@@ -152,23 +153,30 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
         notificationManager.notify(Date().time.toInt(), notification)
     }
 
-    override fun onScanResult(bluetoothDeviceList: HashMap<String, BlueButtDevice>) {
+    override fun onScanResult(bluetoothDeviceList: HashMap<String, BleDevice>) {
         val intent = Intent(SCANNED_DEVICES)
-        intent.putExtra(BLUE_BUTT_DEVICES, bluetoothDeviceList)
+        intent.putExtra(BLE_DEVICES, bluetoothDeviceList)
         localBroadcastManager.sendBroadcast(intent)
     }
 
-    override fun onTriggerAction(blueButtDevice: BlueButtDevice) {
+    override fun onTriggerAction(bleDevice: BleDevice) {
+        when (bleDevice) {
+            is BlueButtDevice -> runBlueButtTriggerAction(bleDevice)
+        }
+    }
+
+    private fun runBlueButtTriggerAction(blueButtDevice: BlueButtDevice) {
         CoroutineScope(Dispatchers.IO).launch {
-            showActionNotification(blueButtDevice)
-            databaseManager.updateClickCount(blueButtDevice.macAddress)
+            blueButtDevicesManager.updateClickCount(blueButtDevice.macAddress)
             blueButtDevice.runRequest()
 
-            bluetoothLEManager.blueButtDeviceHashMap[blueButtDevice.macAddress]?.run {
+            bluetoothLEManager.bleDeviceHashMap[blueButtDevice.macAddress]?.run {
+                if (this !is BlueButtDevice) return@run
+
                 clickCount++
                 switchMode?.let { status ->
                     switchMode = !status
-                    databaseManager.updateSwitchModeStatus(macAddress)
+                    blueButtDevicesManager.updateSwitchModeStatus(macAddress)
                 }
                 bluetoothLEManager.refreshDeviceList()
             }

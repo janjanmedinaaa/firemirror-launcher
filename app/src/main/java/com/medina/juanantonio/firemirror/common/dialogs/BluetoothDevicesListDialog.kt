@@ -20,7 +20,6 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEService
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.adapters.BluetoothDevicesAdapter
-import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.databinding.DialogBluetoothDevicesBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +30,7 @@ import javax.inject.Inject
 import android.net.wifi.WifiManager
 import kotlin.collections.HashMap
 import android.content.Context.WIFI_SERVICE
+import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import java.math.BigInteger
 import java.net.InetAddress
@@ -39,7 +39,7 @@ import java.nio.ByteOrder
 @AndroidEntryPoint
 class BluetoothDevicesListDialog :
     DialogFragment(),
-    BluetoothDevicesAdapter.BlueButtDeviceListener {
+    BluetoothDevicesAdapter.BleDeviceListener {
 
     private var binding: DialogBluetoothDevicesBinding by autoCleared()
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -54,14 +54,12 @@ class BluetoothDevicesListDialog :
         override fun onReceive(context: Context?, intent: Intent?) {
             @Suppress("UNCHECKED_CAST")
             val scannedDevices = intent?.getSerializableExtra(
-                BluetoothLEService.BLUE_BUTT_DEVICES
-            ) as? HashMap<String, BlueButtDevice>
+                BluetoothLEService.BLE_DEVICES
+            ) as? HashMap<String, BleDevice>
 
             scannedDevices?.let {
                 bluetoothDevicesAdapter.submitList(
-                    it.map { (_, device) ->
-                        device
-                    }
+                    it.map { (_, device) -> device }
                 )
             }
         }
@@ -112,7 +110,7 @@ class BluetoothDevicesListDialog :
         bluetoothLeManager.refreshDeviceList()
     }
 
-    override fun onDeviceClicked(item: BlueButtDevice) {
+    override fun onDeviceClicked(item: BleDevice) {
         if (!item.isConnected) {
             CoroutineScope(Dispatchers.IO).launch {
                 bluetoothLeManager.connectDevice(item.macAddress)
@@ -122,7 +120,7 @@ class BluetoothDevicesListDialog :
                 R.string.server_url_format,
                 wifiIpAddress(),
                 fireMirrorServer.port,
-                item.id
+                item.macAddress
             )
 
             findNavController().navigate(
@@ -134,7 +132,7 @@ class BluetoothDevicesListDialog :
         }
     }
 
-    override fun onDeviceLongClicked(item: BlueButtDevice) {
+    override fun onDeviceLongClicked(item: BleDevice) {
         CoroutineScope(Dispatchers.IO).launch {
             if (item.isConnected)
                 bluetoothLeManager.disconnectDevice(item.macAddress)

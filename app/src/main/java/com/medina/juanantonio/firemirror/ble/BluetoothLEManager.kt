@@ -12,7 +12,10 @@ import android.util.Log
 import com.medina.juanantonio.firemirror.ble.models.BLEDOMBleConnection
 import com.medina.juanantonio.firemirror.ble.models.BaseusBleConnection
 import com.medina.juanantonio.firemirror.ble.models.BleConnection
-import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
+import com.medina.juanantonio.firemirror.data.managers.IBLEDOMDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
+import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
+import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
@@ -23,7 +26,8 @@ import kotlin.collections.set
 
 class BluetoothLEManager(
     private val context: Context,
-    private val databaseManager: IDatabaseManager
+    private val blueButtDevicesManager: IBlueButtDevicesManager,
+    private val bleDOMDevicesManager: IBLEDOMDevicesManager
 ) : IBluetoothLEManager, BluetoothGattCallback() {
 
     companion object {
@@ -67,22 +71,35 @@ class BluetoothLEManager(
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            blueButtDeviceHashMap.let {
+            bleDeviceHashMap.let {
                 val macAddress = result?.device?.address ?: return@let
                 Log.d(TAG, "Scanned $macAddress")
 
-                if (it.containsKey(macAddress)) return@let
+                if (it.containsKey(macAddress)) {
+                    createBleConnection(macAddress)
+                    return@let
+                }
                 if (result.device == null) return@let
 
                 bluetoothLEManagerScope.launch {
                     try {
-                        val blueButtDevice =
-                            databaseManager.getDevice(macAddress) ?: BlueButtDevice(
+                        val bleDevice = if (result.device.isBLEDOMDevice()) {
+                            bleDOMDevicesManager.getDevice(macAddress) ?: BLEDOMDevice(
                                 name = result.device.name ?: macAddress,
-                                alias = "",
-                                macAddress = macAddress
-                            )
-                        blueButtDeviceHashMap[macAddress] = blueButtDevice
+                                alias = ""
+                            ).apply {
+                                this.macAddress = macAddress
+                            }
+                        } else {
+                            blueButtDevicesManager.getDevice(macAddress) ?: BlueButtDevice(
+                                name = result.device.name ?: macAddress,
+                                alias = ""
+                            ).apply {
+                                this.macAddress = macAddress
+                            }
+                        }
+
+                        bleDeviceHashMap[macAddress] = bleDevice
                         createBleConnection(macAddress)
 
                         refreshDeviceList()
@@ -95,7 +112,7 @@ class BluetoothLEManager(
     }
 
     override var scanning = false
-    override val blueButtDeviceHashMap = HashMap<String, BlueButtDevice>()
+    override val bleDeviceHashMap = HashMap<String, BleDevice>()
 
     override fun isBluetoothAvailable(): Boolean = bluetoothAdapter != null
 
@@ -129,7 +146,7 @@ class BluetoothLEManager(
 
         val device = bluetoothAdapter.getRemoteDevice(address)
         val bleConnection =
-            if (device.name.startsWith("ELK-BLEDOM")) {
+            if (device.isBLEDOMDevice()) {
                 BLEDOMBleConnection(
                     context,
                     device,
@@ -144,8 +161,8 @@ class BluetoothLEManager(
             }
         bleConnectionHashMap[address] = bleConnection
 
-        val blueButtDevice = blueButtDeviceHashMap[address] ?: return
-        if (blueButtDevice.isPreviouslyConnected)
+        val bleDevice = bleDeviceHashMap[address] ?: return
+        if (bleDevice.isPreviouslyConnected)
             bluetoothLEManagerScope.launch {
                 connectDevice(address)
             }
@@ -158,12 +175,20 @@ class BluetoothLEManager(
         val device = bleConnectionHashMap[address]
         device?.connect()
 
-        blueButtDeviceHashMap[address]?.isDeviceLoading = true
+        bleDeviceHashMap[address]?.isDeviceLoading = true
         refreshDeviceList()
 
-        val blueButtDevice = blueButtDeviceHashMap[address] ?: return
-        databaseManager.addBlueButtDevice(blueButtDevice)
-        databaseManager.updateLastConnectionStatus(address, true)
+        val bleDevice = bleDeviceHashMap[address] ?: return
+        when (bleDevice) {
+            is BlueButtDevice -> {
+                blueButtDevicesManager.addDevice(bleDevice)
+                blueButtDevicesManager.updateLastConnectionStatus(address, true)
+            }
+            is BLEDOMDevice -> {
+                bleDOMDevicesManager.addDevice(bleDevice)
+                bleDOMDevicesManager.updateLastConnectionStatus(address, true)
+            }
+        }
     }
 
     override fun bondDevice(address: String) {
@@ -179,12 +204,20 @@ class BluetoothLEManager(
     override suspend fun disconnectDevice(address: String) {
         Log.d(TAG, "$address disconnectDevice")
 
-        databaseManager.updateLastConnectionStatus(address, false)
+        val bleDevice = bleDeviceHashMap[address] ?: return
+        when (bleDevice) {
+            is BlueButtDevice -> {
+                blueButtDevicesManager.updateLastConnectionStatus(address, false)
+            }
+            is BLEDOMDevice -> {
+                bleDOMDevicesManager.updateLastConnectionStatus(address, false)
+            }
+        }
 
         val device = bleConnectionHashMap[address] ?: return
         device.disconnect()
 
-        blueButtDeviceHashMap[address]?.isDeviceLoading = true
+        bleDeviceHashMap[address]?.isDeviceLoading = true
         refreshDeviceList()
     }
 
@@ -198,18 +231,26 @@ class BluetoothLEManager(
         device.sendWriteCommand(byteArray)
     }
 
-    override fun refreshDeviceList(blueButtDevice: BlueButtDevice?) {
+    override fun refreshDeviceList(bleDevice: BleDevice?) {
         Log.d(TAG, "refreshDeviceList")
-        blueButtDevice?.run {
-            blueButtDeviceHashMap[macAddress]?.apply {
+        bleDevice?.run {
+            bleDeviceHashMap[macAddress]?.apply {
                 alias = this@run.alias
-                triggerRequestOff = this@run.triggerRequestOff
-                triggerRequestOn = this@run.triggerRequestOn
+
+                if (this is BlueButtDevice
+                    && this@run is BlueButtDevice
+                ) {
+                    triggerRequestOff = this@run.triggerRequestOff
+                    triggerRequestOn = this@run.triggerRequestOn
+                }
             }
         }
 
-        leScanCallBack.onScanResult(blueButtDeviceHashMap)
+        leScanCallBack.onScanResult(bleDeviceHashMap)
     }
+
+    private fun BluetoothDevice.isBLEDOMDevice(): Boolean =
+        name.startsWith("ELK-BLEDOM")
 
     inner class BluetoothDeviceGattCallback : BluetoothGattCallback() {
         override fun onCharacteristicWrite(
@@ -229,7 +270,7 @@ class BluetoothLEManager(
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     gatt?.device?.address?.let {
-                        blueButtDeviceHashMap[it]?.apply {
+                        bleDeviceHashMap[it]?.apply {
                             isConnected = true
                             isDeviceLoading = false
                         }
@@ -241,7 +282,7 @@ class BluetoothLEManager(
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     gatt?.close()
                     gatt?.device?.address?.let {
-                        blueButtDeviceHashMap[it]?.apply {
+                        bleDeviceHashMap[it]?.apply {
                             isConnected = false
                             isDeviceLoading = false
                         }
@@ -276,7 +317,7 @@ class BluetoothLEManager(
         ) {
             when (characteristic?.value?.get(1)) {
                 OP_CODE_BUTTON_CLICK -> {
-                    val device = blueButtDeviceHashMap[gatt?.device?.address] ?: return
+                    val device = bleDeviceHashMap[gatt?.device?.address] ?: return
                     leScanCallBack.onTriggerAction(device)
                 }
             }
@@ -286,7 +327,7 @@ class BluetoothLEManager(
 
 interface IBluetoothLEManager {
     var scanning: Boolean
-    val blueButtDeviceHashMap: HashMap<String, BlueButtDevice>
+    val bleDeviceHashMap: HashMap<String, BleDevice>
     var leScanCallBack: BluetoothLeScanCallBack
 
     fun isBluetoothAvailable(): Boolean
@@ -301,12 +342,12 @@ interface IBluetoothLEManager {
     fun unBondDevice(address: String)
     fun writeToDevice(address: String, blueButtCommand: BlueButtCommand)
 
-    fun refreshDeviceList(blueButtDevice: BlueButtDevice? = null)
+    fun refreshDeviceList(bleDevice: BleDevice? = null)
 }
 
 interface BluetoothLeScanCallBack {
-    fun onScanResult(bluetoothDeviceList: HashMap<String, BlueButtDevice>)
-    fun onTriggerAction(blueButtDevice: BlueButtDevice)
+    fun onScanResult(bluetoothDeviceList: HashMap<String, BleDevice>)
+    fun onTriggerAction(bleDevice: BleDevice)
 }
 
 enum class BlueButtCommand {

@@ -3,7 +3,7 @@ package com.medina.juanantonio.firemirror.features.server
 import android.util.Log
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.Constants
-import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
+import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
 import com.medina.juanantonio.firemirror.data.models.TriggerRequest
 import fi.iki.elonen.NanoHTTPD
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +11,7 @@ import kotlinx.coroutines.runBlocking
 import java.lang.NullPointerException
 
 class FireMirrorServer(
-    private val databaseManager: IDatabaseManager,
+    private val blueButtDevicesManager: IBlueButtDevicesManager,
     private val bluetoothLEManager: IBluetoothLEManager,
     val port: Int
 ) : NanoHTTPD(port) {
@@ -25,7 +25,7 @@ class FireMirrorServer(
             Method.GET -> {
                 try {
                     runBlocking(Dispatchers.Main) {
-                        val uriDeviceId = session.uri?.removePrefix("/")?.toInt() ?: -1
+                        val uriMacAddress = session.uri?.removePrefix("/") ?: ""
                         val updateDeviceList = session.parameters.let {
                             it.containsKey("alias") &&
                                     it.containsKey("triggerurlon") &&
@@ -33,8 +33,8 @@ class FireMirrorServer(
                         }
 
                         if (updateDeviceList) {
-                            databaseManager.updateDeviceDetails(
-                                id = uriDeviceId,
+                            blueButtDevicesManager.updateDeviceDetails(
+                                macAddress = uriMacAddress,
                                 alias = session.parameters["alias"]?.get(0) ?: "",
                                 triggerRequestOff = TriggerRequest.default(
                                     session.parameters["triggerurloff"]?.get(0) ?: ""
@@ -45,8 +45,8 @@ class FireMirrorServer(
                             )
                         }
 
-                        val device = databaseManager.getDevice(uriDeviceId)
-                            ?: throw NullPointerException("$uriDeviceId not found")
+                        val device = blueButtDevicesManager.getDevice(uriMacAddress)
+                            ?: throw NullPointerException("$uriMacAddress not found")
 
                         if (updateDeviceList) bluetoothLEManager.refreshDeviceList(device)
 

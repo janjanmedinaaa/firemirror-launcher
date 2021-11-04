@@ -50,19 +50,28 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabaseManager(
+    fun provideBlueButtDevicesManager(
         fireMirrorDb: FireMirrorDb
-    ): IDatabaseManager {
-        return DatabaseManager(fireMirrorDb)
+    ): IBlueButtDevicesManager {
+        return BlueButtDevicesManager(fireMirrorDb)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBLEDOMDevicesManager(
+        fireMirrorDb: FireMirrorDb
+    ): IBLEDOMDevicesManager {
+        return BLEDOMDevicesManager(fireMirrorDb)
     }
 
     @Provides
     @Singleton
     fun provideBluetoothLeManager(
         @ApplicationContext context: Context,
-        databaseManager: IDatabaseManager
+        blueButtDevicesManager: IBlueButtDevicesManager,
+        bleDOMDevicesManager: IBLEDOMDevicesManager
     ): IBluetoothLEManager {
-        return BluetoothLEManager(context, databaseManager)
+        return BluetoothLEManager(context, blueButtDevicesManager, bleDOMDevicesManager)
     }
 
     @Provides
@@ -77,9 +86,9 @@ class AppModule {
     @Provides
     @Singleton
     fun provideFireMirrorServer(
-        databaseManager: IDatabaseManager,
+        blueButtDevicesManager: IBlueButtDevicesManager,
         bluetoothLEManager: IBluetoothLEManager
     ): FireMirrorServer {
-        return FireMirrorServer(databaseManager, bluetoothLEManager, 8080)
+        return FireMirrorServer(blueButtDevicesManager, bluetoothLEManager, 8080)
     }
 }

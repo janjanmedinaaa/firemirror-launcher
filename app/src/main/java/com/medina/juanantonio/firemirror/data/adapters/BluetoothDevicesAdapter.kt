@@ -10,54 +10,59 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.extensions.animateTextSize
+import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.databinding.ItemBluetoothDeviceBinding
 
 class BluetoothDevicesAdapter(
-    private val listener: BlueButtDeviceListener
-) : ListAdapter<BlueButtDevice, BluetoothDevicesAdapter.BlueButtDeviceViewHolder>(
-    object : DiffUtil.ItemCallback<BlueButtDevice>() {
+    private val listener: BleDeviceListener
+) : ListAdapter<BleDevice, BluetoothDevicesAdapter.BleDeviceViewHolder>(
+    object : DiffUtil.ItemCallback<BleDevice>() {
         override fun areItemsTheSame(
-            oldItem: BlueButtDevice,
-            newItem: BlueButtDevice
+            oldItem: BleDevice,
+            newItem: BleDevice
         ): Boolean {
             return oldItem == newItem
         }
 
         override fun areContentsTheSame(
-            oldItem: BlueButtDevice,
-            newItem: BlueButtDevice
+            oldItem: BleDevice,
+            newItem: BleDevice
         ): Boolean {
             return false
         }
     }
 ) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BlueButtDeviceViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BleDeviceViewHolder {
         val binding = ItemBluetoothDeviceBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
         )
 
-        return BlueButtDeviceViewHolder(binding)
+        return BleDeviceViewHolder(binding)
     }
 
     override fun getItemCount() = currentList.size
 
-    override fun onBindViewHolder(holder: BlueButtDeviceViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: BleDeviceViewHolder, position: Int) {
         holder.bind(currentList[position])
     }
 
-    inner class BlueButtDeviceViewHolder(
+    inner class BleDeviceViewHolder(
         private val binding: ItemBluetoothDeviceBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: BlueButtDevice) {
+        fun bind(item: BleDevice) {
             binding.textViewDeviceName.text = item.getDeviceName()
             binding.textViewDeviceAddress.text = item.macAddress
-            binding.textViewDeviceClickCount.text =
-                binding.root.context.getString(R.string.click_count_format, item.clickCount)
+
+            binding.textViewDeviceClickCount.isVisible = item is BlueButtDevice
+            if (item is BlueButtDevice) {
+                binding.textViewDeviceClickCount.text =
+                    binding.root.context.getString(R.string.click_count_format, item.clickCount)
+            }
 
             val drawable =
                 if (item.isConnected) R.drawable.ic_bluetooth_connected
@@ -92,8 +97,8 @@ class BluetoothDevicesAdapter(
         }
     }
 
-    interface BlueButtDeviceListener {
-        fun onDeviceClicked(item: BlueButtDevice)
-        fun onDeviceLongClicked(item: BlueButtDevice)
+    interface BleDeviceListener {
+        fun onDeviceClicked(item: BleDevice)
+        fun onDeviceLongClicked(item: BleDevice)
     }
 }

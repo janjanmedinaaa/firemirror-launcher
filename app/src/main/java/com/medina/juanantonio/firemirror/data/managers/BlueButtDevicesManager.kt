@@ -4,10 +4,11 @@ import com.medina.juanantonio.firemirror.data.database.FireMirrorDb
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.data.models.TriggerRequest
 
-class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
+class BlueButtDevicesManager(fireMirrorDb: FireMirrorDb) : IBlueButtDevicesManager {
     private val blueButtDeviceDao = fireMirrorDb.blueButtDeviceDao()
 
-    override suspend fun addBlueButtDevice(blueButtDevice: BlueButtDevice) {
+    override suspend fun addDevice(blueButtDevice: BlueButtDevice) {
+        if (exists(blueButtDevice.macAddress)) return
         blueButtDeviceDao.insert(blueButtDevice)
     }
 
@@ -15,22 +16,23 @@ class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
         return blueButtDeviceDao.getAllDevices()
     }
 
-    override suspend fun getDevice(id: Int): BlueButtDevice? {
-        return blueButtDeviceDao.getDevice(id)
-    }
-
     override suspend fun getDevice(macAddress: String): BlueButtDevice? {
         return blueButtDeviceDao.getDevice(macAddress)
     }
 
+    override suspend fun exists(macAddress: String): Boolean {
+        val device = getDevice(macAddress)
+        return device != null
+    }
+
     override suspend fun updateDeviceDetails(
-        id: Int,
+        macAddress: String,
         alias: String,
         triggerRequestOff: TriggerRequest?,
         triggerRequestOn: TriggerRequest?
     ) {
         blueButtDeviceDao.updateDeviceDetails(
-            id,
+            macAddress,
             alias,
             triggerRequestOff,
             triggerRequestOn
@@ -61,13 +63,13 @@ class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
     }
 }
 
-interface IDatabaseManager {
-    suspend fun addBlueButtDevice(blueButtDevice: BlueButtDevice)
+interface IBlueButtDevicesManager {
+    suspend fun addDevice(blueButtDevice: BlueButtDevice)
     suspend fun getAllDevices(): List<BlueButtDevice>
-    suspend fun getDevice(id: Int): BlueButtDevice?
     suspend fun getDevice(macAddress: String): BlueButtDevice?
+    suspend fun exists(macAddress: String): Boolean
     suspend fun updateDeviceDetails(
-        id: Int,
+        macAddress: String,
         alias: String,
         triggerRequestOff: TriggerRequest? = null,
         triggerRequestOn: TriggerRequest? = null
