@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.medina.juanantonio.firemirror.R
@@ -27,6 +28,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.net.wifi.WifiManager
+import kotlin.collections.HashMap
+import android.content.Context.WIFI_SERVICE
+import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
+import java.math.BigInteger
+import java.net.InetAddress
+import java.nio.ByteOrder
 
 @AndroidEntryPoint
 class BluetoothDevicesListDialog :
@@ -58,6 +66,9 @@ class BluetoothDevicesListDialog :
             }
         }
     }
+
+    @Inject
+    lateinit var fireMirrorServer: FireMirrorServer
 
     @Inject
     lateinit var bluetoothLeManager: IBluetoothLEManager
@@ -102,9 +113,24 @@ class BluetoothDevicesListDialog :
     }
 
     override fun onDeviceClicked(item: BlueButtDevice) {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (!item.isConnected)
+        if (!item.isConnected) {
+            CoroutineScope(Dispatchers.IO).launch {
                 bluetoothLeManager.connectDevice(item.macAddress)
+            }
+        } else {
+            val serverLink = getString(
+                R.string.server_url_format,
+                wifiIpAddress(),
+                fireMirrorServer.port,
+                item.id
+            )
+
+            findNavController().navigate(
+                BluetoothDevicesListDialogDirections
+                    .actionBluetoothDevicesListDialogToImageViewerDialog(
+                        getString(R.string.qr_url, serverLink)
+                    )
+            )
         }
     }
 
@@ -113,5 +139,24 @@ class BluetoothDevicesListDialog :
             if (item.isConnected)
                 bluetoothLeManager.disconnectDevice(item.macAddress)
         }
+    }
+
+    private fun wifiIpAddress(): String? {
+        val wifiManager =
+            requireContext().applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        var ipAddress = wifiManager.connectionInfo.ipAddress
+
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress)
+        }
+        val ipByteArray: ByteArray = BigInteger.valueOf(ipAddress.toLong()).toByteArray()
+        val ipAddressString: String? = try {
+            InetAddress.getByAddress(ipByteArray).hostAddress
+        } catch (ex: Exception) {
+            null
+        }
+
+        return ipAddressString
     }
 }

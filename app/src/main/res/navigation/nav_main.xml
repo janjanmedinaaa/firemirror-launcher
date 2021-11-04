@@ -36,5 +36,10 @@
         android:id="@+id/bluetoothDevicesListDialog"
         android:name="com.medina.juanantonio.firemirror.common.dialogs.BluetoothDevicesListDialog"
         android:label="BluetoothDevicesListDialog"
-        tools:layout="@layout/dialog_bluetooth_devices" />
+        tools:layout="@layout/dialog_bluetooth_devices">
+
+        <action
+            android:id="@+id/action_bluetoothDevicesListDialog_to_imageViewerDialog"
+            app:destination="@id/imageViewerDialog" />
+    </dialog>
 </navigation>

@@ -13,7 +13,7 @@ import java.lang.NullPointerException
 class FireMirrorServer(
     private val databaseManager: IDatabaseManager,
     private val bluetoothLEManager: IBluetoothLEManager,
-    port: Int
+    val port: Int
 ) : NanoHTTPD(port) {
 
     companion object {
