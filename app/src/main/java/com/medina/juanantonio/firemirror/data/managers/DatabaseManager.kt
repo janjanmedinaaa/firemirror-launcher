@@ -15,18 +15,22 @@ class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
         return blueButtDeviceDao.getAllDevices()
     }
 
+    override suspend fun getDevice(id: Int): BlueButtDevice? {
+        return blueButtDeviceDao.getDevice(id)
+    }
+
     override suspend fun getDevice(macAddress: String): BlueButtDevice? {
         return blueButtDeviceDao.getDevice(macAddress)
     }
 
     override suspend fun updateDeviceDetails(
-        macAddress: String,
+        id: Int,
         alias: String,
         triggerRequestOff: TriggerRequest?,
         triggerRequestOn: TriggerRequest?
     ) {
         blueButtDeviceDao.updateDeviceDetails(
-            macAddress,
+            id,
             alias,
             triggerRequestOff,
             triggerRequestOn
@@ -60,9 +64,10 @@ class DatabaseManager(fireMirrorDb: FireMirrorDb) : IDatabaseManager {
 interface IDatabaseManager {
     suspend fun addBlueButtDevice(blueButtDevice: BlueButtDevice)
     suspend fun getAllDevices(): List<BlueButtDevice>
+    suspend fun getDevice(id: Int): BlueButtDevice?
     suspend fun getDevice(macAddress: String): BlueButtDevice?
     suspend fun updateDeviceDetails(
-        macAddress: String,
+        id: Int,
         alias: String,
         triggerRequestOff: TriggerRequest? = null,
         triggerRequestOn: TriggerRequest? = null

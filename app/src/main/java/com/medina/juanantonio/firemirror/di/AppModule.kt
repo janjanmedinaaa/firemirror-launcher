@@ -77,8 +77,9 @@ class AppModule {
     @Provides
     @Singleton
     fun provideFireMirrorServer(
-        @ApplicationContext context: Context
+        databaseManager: IDatabaseManager,
+        bluetoothLEManager: IBluetoothLEManager
     ): FireMirrorServer {
-        return FireMirrorServer(context, 8080)
+        return FireMirrorServer(databaseManager, bluetoothLEManager, 8080)
     }
 }

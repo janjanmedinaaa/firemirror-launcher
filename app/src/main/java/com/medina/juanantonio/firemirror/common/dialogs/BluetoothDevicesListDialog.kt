@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,7 +52,6 @@ class BluetoothDevicesListDialog :
             scannedDevices?.let {
                 bluetoothDevicesAdapter.submitList(
                     it.map { (_, device) ->
-                        Log.d("DEVELOP", "ITEM $device")
                         device
                     }
                 )

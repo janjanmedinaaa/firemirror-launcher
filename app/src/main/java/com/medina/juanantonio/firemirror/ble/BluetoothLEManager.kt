@@ -198,8 +198,16 @@ class BluetoothLEManager(
         device.sendWriteCommand(byteArray)
     }
 
-    override fun refreshDeviceList() {
+    override fun refreshDeviceList(blueButtDevice: BlueButtDevice?) {
         Log.d(TAG, "refreshDeviceList")
+        blueButtDevice?.run {
+            blueButtDeviceHashMap[macAddress]?.apply {
+                alias = this@run.alias
+                triggerRequestOff = this@run.triggerRequestOff
+                triggerRequestOn = this@run.triggerRequestOn
+            }
+        }
+
         leScanCallBack.onScanResult(blueButtDeviceHashMap)
     }
 
@@ -293,7 +301,7 @@ interface IBluetoothLEManager {
     fun unBondDevice(address: String)
     fun writeToDevice(address: String, blueButtCommand: BlueButtCommand)
 
-    fun refreshDeviceList()
+    fun refreshDeviceList(blueButtDevice: BlueButtDevice? = null)
 }
 
 interface BluetoothLeScanCallBack {

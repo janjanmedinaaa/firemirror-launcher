@@ -16,9 +16,9 @@ data class TriggerRequest(
 
     companion object {
 
-        fun default(): TriggerRequest {
+        fun default(url: String = ""): TriggerRequest {
             return TriggerRequest(
-                url = "",
+                url = url,
                 requestType = RequestType.GET,
                 headers = listOf(),
                 params = listOf()

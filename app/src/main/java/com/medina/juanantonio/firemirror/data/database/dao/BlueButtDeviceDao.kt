@@ -16,16 +16,19 @@ interface BlueButtDeviceDao {
     @Query("SELECT * FROM blueButtDevice")
     suspend fun getAllDevices(): List<BlueButtDevice>
 
+    @Query("SELECT * FROM blueButtDevice WHERE id = :id LIMIT 1")
+    suspend fun getDevice(id: Int): BlueButtDevice?
+
     @Query("SELECT * FROM blueButtDevice WHERE macAddress = :macAddress LIMIT 1")
     suspend fun getDevice(macAddress: String): BlueButtDevice?
 
     @Query(
         "UPDATE blueButtDevice SET alias = :alias, triggerRequestOff = " +
             ":triggerRequestOff, triggerRequestOn = :triggerRequestOn " +
-            "WHERE macAddress = :macAddress"
+            "WHERE id = :id"
     )
     suspend fun updateDeviceDetails(
-        macAddress: String,
+        id: Int,
         alias: String,
         triggerRequestOff: TriggerRequest?,
         triggerRequestOn: TriggerRequest?

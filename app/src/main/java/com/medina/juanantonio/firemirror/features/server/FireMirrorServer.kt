@@ -1,16 +1,18 @@
 package com.medina.juanantonio.firemirror.features.server
 
-import android.content.Context
 import android.util.Log
-import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.Constants
+import com.medina.juanantonio.firemirror.data.managers.IDatabaseManager
+import com.medina.juanantonio.firemirror.data.models.TriggerRequest
 import fi.iki.elonen.NanoHTTPD
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.lang.NullPointerException
 
 class FireMirrorServer(
-    private val context: Context,
+    private val databaseManager: IDatabaseManager,
+    private val bluetoothLEManager: IBluetoothLEManager,
     port: Int
 ) : NanoHTTPD(port) {
 
@@ -19,26 +21,52 @@ class FireMirrorServer(
     }
 
     override fun serve(session: IHTTPSession?): Response {
-        return when {
-            session?.method == Method.GET
-                    && session.uri == "/" -> {
-
-                CoroutineScope(Dispatchers.Main).launch {
-                    session.parameters.forEach { (t, u) ->
-                        u.forEach {
-                            Log.d("DEVELOP", "$t $it")
+        return when (session?.method) {
+            Method.GET -> {
+                try {
+                    runBlocking(Dispatchers.Main) {
+                        val uriDeviceId = session.uri?.removePrefix("/")?.toInt() ?: -1
+                        val updateDeviceList = session.parameters.let {
+                            it.containsKey("alias") &&
+                                    it.containsKey("triggerurlon") &&
+                                    it.containsKey("triggerurloff")
                         }
-                    }
-                }
 
-                newFixedLengthResponse(
-                    Constants.Server.getHtmlForm(
-                        deviceName = "Device Name",
-                        alias = "Alias",
-                        triggerUrlOff = "Test URL Off",
-                        triggerUrlOn = "Test URL On"
+                        if (updateDeviceList) {
+                            databaseManager.updateDeviceDetails(
+                                id = uriDeviceId,
+                                alias = session.parameters["alias"]?.get(0) ?: "",
+                                triggerRequestOff = TriggerRequest.default(
+                                    session.parameters["triggerurloff"]?.get(0) ?: ""
+                                ),
+                                triggerRequestOn = TriggerRequest.default(
+                                    session.parameters["triggerurlon"]?.get(0) ?: ""
+                                )
+                            )
+                        }
+
+                        val device = databaseManager.getDevice(uriDeviceId)
+                            ?: throw NullPointerException("$uriDeviceId not found")
+
+                        if (updateDeviceList) bluetoothLEManager.refreshDeviceList(device)
+
+                        newFixedLengthResponse(
+                            Constants.Server.getHtmlForm(
+                                deviceName = device.getDeviceName(),
+                                alias = device.alias,
+                                triggerUrlOff = device.triggerRequestOff.url,
+                                triggerUrlOn = device.triggerRequestOn.url
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.d(TAG, "${e.message}")
+
+                    newFixedLengthResponse(
+                        "<html><body><h1>Invalid device ID provided from URL: " +
+                                "${session.uri}</h1><br /><h2>${e.message}</h2></body></html>"
                     )
-                )
+                }
             }
             else -> {
                 newFixedLengthResponse(

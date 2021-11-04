@@ -22,7 +22,7 @@ data class BlueButtDevice(
     }
 
     @PrimaryKey(autoGenerate = true)
-    var id: Int = -1
+    var id: Int = 1
 
     var clickCount: Int = 0
 
@@ -49,12 +49,29 @@ data class BlueButtDevice(
     fun getDeviceName() =
         if (alias.isNotEmpty()) alias else name
 
+    /**
+     * Previous implementation depends on switch Mode having a nullable value
+     * If switchMode is null, just trigger the off request,
+     * else boolean value determines the trigger request.
+     *
+     * switchMode.let {
+     *      if (it != null) {
+     *          if (it) triggerRequestOn.run()
+     *          else triggerRequestOff.run()
+     *      } else {
+     *          triggerRequestOff.run()
+     *      }
+     * }
+     */
     suspend fun runRequest() {
-        switchMode.let {
-            if (it != null) {
-                if (it) triggerRequestOn.run()
-                else triggerRequestOff.run()
-            } else {
+        if (switchMode == null) switchMode = false
+        when (switchMode) {
+            true -> {
+                if (triggerRequestOn.url.isEmpty())
+                    triggerRequestOff.run()
+                else triggerRequestOn.run()
+            }
+            false -> {
                 triggerRequestOff.run()
             }
         }
