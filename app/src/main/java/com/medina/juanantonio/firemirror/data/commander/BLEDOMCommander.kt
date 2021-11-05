@@ -31,33 +31,30 @@ object BLEDOMCommander {
         const val COMMAND_ARG_1_MODE_EFFECT: Byte = 0x03
     }
 
-    // TODO: Convert Brightness to byte 0-100 (0x00-0x64)
     fun setBrightness(
         @IntRange(from = 0, to = 100) brightness: Int
     ): ByteArray {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_BRIGHTNESS,
-            commandSubId = 0x32
+            commandSubId = brightness.toByte()
         )
     }
 
-    // TODO: Convert Speed to byte 0-100 (0x00-0x64)
     fun setSpeed(
         @IntRange(from = 0, to = 100) speed: Int
     ): ByteArray {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_SPEED,
-            commandSubId = 0x64
+            commandSubId = speed.toByte()
         )
     }
 
-    // TODO: Convert Temperature to byte 128-138 (0x80-0x8a)
     fun setModeTemperature(
         @IntRange(from = 128, to = 138) temperature: Int
     ): ByteArray {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_MODE,
-            commandSubId = (0x85).toByte(),
+            commandSubId = temperature.toByte(),
             commandArg1 = CommandBytes.COMMAND_ARG_1_TEMPERATURE
         )
     }
@@ -78,29 +75,26 @@ object BLEDOMCommander {
         )
     }
 
-    // TODO: Convert Grayscale to byte 0-100 (0x00-0x64)
     fun setColorGrayscale(
         @IntRange(from = 0, to = 100) grayScale: Int
     ): ByteArray {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_COLOR,
             commandSubId = CommandBytes.COMMAND_SUB_ID_GRAYSCALE,
-            commandArg1 = 0x32
+            commandArg1 = grayScale.toByte()
         )
     }
 
-    // TODO: Convert Temperature to byte 0-100 (0x00-0x64)
     fun setColorTemperature(
         @IntRange(from = 0, to = 100) temperature: Int
     ): ByteArray {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_COLOR,
             commandSubId = CommandBytes.COMMAND_SUB_ID_TEMPERATURE,
-            commandArg1 = 0x32
+            commandArg1 = temperature.toByte()
         )
     }
 
-    // TODO: Convert RGB values to byte 0-255 (0x00-0xff)
     fun setColorRGB(
         @IntRange(from = 0, to = 255) red: Int,
         @IntRange(from = 0, to = 255) green: Int,
@@ -109,18 +103,18 @@ object BLEDOMCommander {
         return setupCommandByteArray(
             commandId = CommandBytes.COMMAND_ID_COLOR,
             commandSubId = CommandBytes.COMMAND_SUB_ID_RGB,
-            commandArg1 = 0x00,
-            commandArg2 = (0xFF).toByte(),
-            commandArg3 = 0x00
+            commandArg1 = red.toByte(),
+            commandArg2 = green.toByte(),
+            commandArg3 = blue.toByte()
         )
     }
 
-        private fun setupCommandByteArray(
-            commandId: Byte,
-            commandSubId: Byte,
-            commandArg1: Byte = CommandBytes.COMMAND_FILL_BYTE,
-            commandArg2: Byte = CommandBytes.COMMAND_FILL_BYTE,
-            commandArg3: Byte = CommandBytes.COMMAND_FILL_BYTE
+    private fun setupCommandByteArray(
+        commandId: Byte,
+        commandSubId: Byte,
+        commandArg1: Byte = CommandBytes.COMMAND_FILL_BYTE,
+        commandArg2: Byte = CommandBytes.COMMAND_FILL_BYTE,
+        commandArg3: Byte = CommandBytes.COMMAND_FILL_BYTE
     ): ByteArray {
         return byteArrayOf(
             CommandBytes.COMMAND_START_BYTE,

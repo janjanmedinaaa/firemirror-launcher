@@ -12,6 +12,7 @@ import android.util.Log
 import com.medina.juanantonio.firemirror.ble.models.BLEDOMBleConnection
 import com.medina.juanantonio.firemirror.ble.models.BaseusBleConnection
 import com.medina.juanantonio.firemirror.ble.models.BleConnection
+import com.medina.juanantonio.firemirror.data.commander.BaseusCommander
 import com.medina.juanantonio.firemirror.data.managers.IBLEDOMDevicesManager
 import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
 import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
@@ -37,8 +38,6 @@ class BluetoothLEManager(
 
         const val BLEDOM_SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
         const val BLEDOM_WRITE_CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
-
-        private const val OP_CODE_BUTTON_CLICK = (0xAA08).toByte()
 
         const val TAG = "BluetoothLEManager"
     }
@@ -221,14 +220,9 @@ class BluetoothLEManager(
         refreshDeviceList()
     }
 
-    override fun writeToDevice(address: String, blueButtCommand: BlueButtCommand) {
+    override fun writeToDevice(address: String, command: ByteArray) {
         val device = bleConnectionHashMap[address] ?: return
-        val byteArray =
-            when (blueButtCommand) {
-                BlueButtCommand.NOTIFY_BUTTON -> byteArrayOf((0xBA).toByte(), 0x03, 0x01)
-            }
-
-        device.sendWriteCommand(byteArray)
+        device.sendWriteCommand(command)
     }
 
     override fun refreshDeviceList(bleDevice: BleDevice?) {
@@ -316,7 +310,7 @@ class BluetoothLEManager(
             characteristic: BluetoothGattCharacteristic?
         ) {
             when (characteristic?.value?.get(1)) {
-                OP_CODE_BUTTON_CLICK -> {
+                BaseusCommander.NotificationCommand.OP_CODE_BUTTON_CLICK -> {
                     val device = bleDeviceHashMap[gatt?.device?.address] ?: return
                     leScanCallBack.onTriggerAction(device)
                 }
@@ -340,7 +334,7 @@ interface IBluetoothLEManager {
     suspend fun disconnectDevice(address: String)
     fun bondDevice(address: String)
     fun unBondDevice(address: String)
-    fun writeToDevice(address: String, blueButtCommand: BlueButtCommand)
+    fun writeToDevice(address: String, command: ByteArray)
 
     fun refreshDeviceList(bleDevice: BleDevice? = null)
 }
@@ -348,8 +342,4 @@ interface IBluetoothLEManager {
 interface BluetoothLeScanCallBack {
     fun onScanResult(bluetoothDeviceList: HashMap<String, BleDevice>)
     fun onTriggerAction(bleDevice: BleDevice)
-}
-
-enum class BlueButtCommand {
-    NOTIFY_BUTTON
 }
