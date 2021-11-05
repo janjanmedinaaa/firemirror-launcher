@@ -1,10 +1,12 @@
 package com.medina.juanantonio.firemirror.data.managers
 
 import android.app.Activity
+import android.content.Context
 import android.util.Log
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.httpPost
 import com.github.kittinunf.result.Result
+import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.common.extensions.toBase64
 import com.medina.juanantonio.firemirror.common.extensions.toSpotifyAccessToken
 import com.medina.juanantonio.firemirror.common.extensions.toSpotifyCurrentTrack
@@ -16,11 +18,13 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.random.Random
 
-class SpotifyManager : ISpotifyManager {
+class SpotifyManager(
+    context: Context
+) : ISpotifyManager {
 
     companion object {
-        const val CLIENT_ID = "2e6ea4b25ad643018f0a2d738445216d"
-        const val CLIENT_SECRET = "4d5f4eced09943a8b0556539c58f8923"
+        var CLIENT_ID = ""
+        var CLIENT_SECRET = ""
 
         const val REQUEST_CODE = 1337
         const val REDIRECT_URL = "com.medina.juanantonio.firemirror://callback"
@@ -31,6 +35,11 @@ class SpotifyManager : ISpotifyManager {
             "https://accounts.spotify.com/api/token"
 
         const val TAG = "SpotifyManager"
+    }
+
+    init {
+        CLIENT_ID = context.getString(R.string.spotifyClientId)
+        CLIENT_SECRET = context.getString(R.string.spotifyClientSecret)
     }
 
     override fun authenticate(activity: Activity, externalBrowser: Boolean): String {

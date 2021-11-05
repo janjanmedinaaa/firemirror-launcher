@@ -23,7 +23,8 @@ import kotlin.concurrent.schedule
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private var spotifyManager: ISpotifyManager,
-    private var dataStoreManager: IDataStoreManager
+    private var dataStoreManager: IDataStoreManager,
+    private var openWeatherManager: IOpenWeatherManager
 ) : ViewModel() {
 
     private var weatherTimerTask: TimerTask? = null
@@ -125,7 +126,7 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun getCurrentWeather() {
         val currentWeatherResult =
-            OpenWeatherManager.getCurrentWeather("1105", "PH")
+            openWeatherManager.getCurrentWeather("1105", "PH")
 
         withContext(Dispatchers.Main) {
             currentWeather.value = currentWeatherResult

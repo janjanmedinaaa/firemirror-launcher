@@ -37,8 +37,18 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideSpotifyManager(): ISpotifyManager {
-        return SpotifyManager()
+    fun provideOpenWeatherManager(
+        @ApplicationContext context: Context
+    ): IOpenWeatherManager {
+        return OpenWeatherManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpotifyManager(
+        @ApplicationContext context: Context
+    ): ISpotifyManager {
+        return SpotifyManager(context)
     }
 
     @Provides

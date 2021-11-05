@@ -8,6 +8,10 @@ plugins {
     id 'androidx.navigation.safeargs.kotlin'
 }
 
+def keysPropertiesFile = rootProject.file("keys.properties")
+def keysProperties = new Properties()
+keysProperties.load(new FileInputStream(keysPropertiesFile))
+
 android {
     compileSdk 30
 
@@ -40,6 +44,13 @@ android {
     buildFeatures {
         viewBinding true
         dataBinding true
+    }
+
+    applicationVariants.all { variant ->
+        variant.resValue "string", "spotifyClientId", keysProperties['spotifyClientId']
+        variant.resValue "string", "spotifyClientSecret", keysProperties['spotifyClientSecret']
+        variant.resValue "string", "openWeatherKey", keysProperties['openWeatherKey']
+        variant.resValue "string", "txtBoxKey", keysProperties['txtBoxKey']
     }
 }
 
