@@ -97,8 +97,14 @@ class AppModule {
     @Singleton
     fun provideFireMirrorServer(
         blueButtDevicesManager: IBlueButtDevicesManager,
+        bleDOMDevicesManager: IBLEDOMDevicesManager,
         bluetoothLEManager: IBluetoothLEManager
     ): FireMirrorServer {
-        return FireMirrorServer(blueButtDevicesManager, bluetoothLEManager, 8080)
+        return FireMirrorServer(
+            blueButtDevicesManager,
+            bleDOMDevicesManager,
+            bluetoothLEManager,
+            8080
+        )
     }
 }

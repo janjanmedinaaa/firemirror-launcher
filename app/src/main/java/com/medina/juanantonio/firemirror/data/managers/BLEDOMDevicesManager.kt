@@ -19,6 +19,10 @@ class BLEDOMDevicesManager(fireMirrorDb: FireMirrorDb) : IBLEDOMDevicesManager {
         return bleDOMDeviceDao.getDevice(macAddress)
     }
 
+    override suspend fun updateDeviceDetails(macAddress: String, alias: String) {
+        bleDOMDeviceDao.updateDeviceDetails(macAddress, alias)
+    }
+
     override suspend fun exists(macAddress: String): Boolean {
         val device = getDevice(macAddress)
         return device != null
@@ -40,6 +44,7 @@ interface IBLEDOMDevicesManager {
     suspend fun addDevice(bleDOMDevice: BLEDOMDevice)
     suspend fun getAllDevices(): List<BLEDOMDevice>
     suspend fun getDevice(macAddress: String): BLEDOMDevice?
+    suspend fun updateDeviceDetails(macAddress: String, alias: String)
     suspend fun exists(macAddress: String): Boolean
     suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)
     suspend fun deleteDevice(macAddress: String)

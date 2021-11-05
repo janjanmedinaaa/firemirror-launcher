@@ -31,7 +31,6 @@ import android.net.wifi.WifiManager
 import kotlin.collections.HashMap
 import android.content.Context.WIFI_SERVICE
 import com.medina.juanantonio.firemirror.data.models.BleDevice
-import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import java.math.BigInteger
 import java.net.InetAddress
@@ -116,22 +115,20 @@ class BluetoothDevicesListDialog :
             CoroutineScope(Dispatchers.IO).launch {
                 bluetoothLeManager.connectDevice(item.macAddress)
             }
-        } else when (item) {
-            is BlueButtDevice -> {
-                val serverLink = getString(
-                    R.string.server_url_format,
-                    wifiIpAddress(),
-                    fireMirrorServer.port,
-                    item.macAddress
-                )
+        } else {
+            val serverLink = getString(
+                R.string.server_url_format,
+                wifiIpAddress(),
+                fireMirrorServer.port,
+                item.macAddress
+            )
 
-                findNavController().navigate(
-                    BluetoothDevicesListDialogDirections
-                        .actionBluetoothDevicesListDialogToImageViewerDialog(
-                            getString(R.string.qr_url, serverLink)
-                        )
-                )
-            }
+            findNavController().navigate(
+                BluetoothDevicesListDialogDirections
+                    .actionBluetoothDevicesListDialogToImageViewerDialog(
+                        getString(R.string.qr_url, serverLink)
+                    )
+            )
         }
     }
 

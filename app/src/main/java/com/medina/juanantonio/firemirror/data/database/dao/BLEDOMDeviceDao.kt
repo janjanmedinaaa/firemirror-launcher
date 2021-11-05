@@ -18,6 +18,9 @@ interface BLEDOMDeviceDao {
     @Query("SELECT * FROM bleDOMDevice WHERE macAddress = :macAddress LIMIT 1")
     suspend fun getDevice(macAddress: String): BLEDOMDevice?
 
+    @Query("UPDATE bleDOMDevice SET alias = :alias WHERE macAddress = :macAddress")
+    suspend fun updateDeviceDetails(macAddress: String, alias: String)
+
     @Query("UPDATE bleDOMDevice SET isPreviouslyConnected = :isPreviouslyConnected WHERE macAddress = :macAddress")
     suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)
 
