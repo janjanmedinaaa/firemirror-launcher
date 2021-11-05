@@ -126,7 +126,7 @@ class BluetoothDevicesListDialog :
             findNavController().navigate(
                 BluetoothDevicesListDialogDirections
                     .actionBluetoothDevicesListDialogToImageViewerDialog(
-                        getString(R.string.qr_url, serverLink)
+                        getString(R.string.qr_url_600, serverLink)
                     )
             )
         }

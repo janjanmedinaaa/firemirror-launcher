@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">FireMirror</string>
-    <string name="qr_url">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
+    <string name="qr_url_200">https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=%s</string>
+    <string name="qr_url_600">https://api.qrserver.com/v1/create-qr-code/?size=600x600&amp;data=%s</string>
     <string name="server_url_format">http://%s:%d/%s</string>
     <string name="weather_icon_url">https://openweathermap.org/img/wn/%s@2x.png</string>
 

@@ -140,7 +140,7 @@ class HomeFragment : Fragment() {
             itemList = arrayListOf(
                 ImageListDisplayItem(
                     imageUrl = getString(
-                        R.string.qr_url,
+                        R.string.qr_url_200,
                         "WIFI:T:WPA;S:Medina Condo WIFI;P:24418A001431;H:;"
                     )
                 )
