@@ -21,4 +21,6 @@ class BLEDOMDevice(
 
     @Ignore
     override var isPaired: Boolean = false
+
+    var ledData: LEDData = LEDData()
 }

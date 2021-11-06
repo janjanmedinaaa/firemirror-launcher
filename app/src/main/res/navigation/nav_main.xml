@@ -41,5 +41,21 @@
         <action
             android:id="@+id/action_bluetoothDevicesListDialog_to_imageViewerDialog"
             app:destination="@id/imageViewerDialog" />
+
+        <action
+            android:id="@+id/action_bluetoothDevicesListDialog_to_LEDOptionsDialog"
+            app:destination="@id/LEDOptionsDialog" />
+    </dialog>
+
+    <dialog
+        android:id="@+id/LEDOptionsDialog"
+        android:name="com.medina.juanantonio.firemirror.common.dialogs.LEDOptionsDialog"
+        android:label="LEDOptionsDialog"
+        tools:layout="@layout/dialog_led_options">
+
+        <argument
+            android:name="deviceMacAddressArg"
+            app:argType="string"
+            app:nullable="false" />
     </dialog>
 </navigation>

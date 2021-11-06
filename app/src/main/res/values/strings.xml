@@ -26,4 +26,10 @@
     <string name="title_android_auth">Android Auth</string>
 
     <string name="click_count_format">Click count: %d</string>
+
+    <string name="red_label_format">Red (%d)</string>
+    <string name="green_label_format">Green (%d)</string>
+    <string name="blue_label_format">Blue (%d)</string>
+    <string name="brightness_label_format">Brightness (%d)</string>
+    <string name="temperature_label_format">Temperature (%d)</string>
 </resources>
