@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
+import com.medina.juanantonio.firemirror.data.models.LEDData
 
 @Dao
 interface BLEDOMDeviceDao {
@@ -20,6 +21,9 @@ interface BLEDOMDeviceDao {
 
     @Query("UPDATE bleDOMDevice SET alias = :alias WHERE macAddress = :macAddress")
     suspend fun updateDeviceDetails(macAddress: String, alias: String)
+
+    @Query("UPDATE bleDOMDevice SET ledData = :ledData WHERE macAddress = :macAddress")
+    suspend fun updateDeviceLEDData(macAddress: String, ledData: LEDData)
 
     @Query("UPDATE bleDOMDevice SET isPreviouslyConnected = :isPreviouslyConnected WHERE macAddress = :macAddress")
     suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)

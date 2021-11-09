@@ -8,7 +8,12 @@ import android.content.Intent
 import android.util.Log
 import androidx.annotation.CallSuper
 import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
+import com.medina.juanantonio.firemirror.data.managers.SMSManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 abstract class HiltBroadcastReceiver : BroadcastReceiver() {
@@ -54,11 +59,10 @@ class RestartReceiver : HiltBroadcastReceiver() {
             alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
              */
 
-            // this alarm might execute between now to next day, and repeat daily
             alarm.setInexactRepeating(
                 AlarmManager.RTC_WAKEUP,
                 System.currentTimeMillis(),
-                AlarmManager.INTERVAL_HOUR,
+                AlarmManager.INTERVAL_HALF_HOUR,
                 pendingIntent
             )
         }
@@ -78,5 +82,11 @@ class RestartReceiver : HiltBroadcastReceiver() {
         Log.d(TAG, "RestartReceiver triggered.")
 
         bluetoothLEServiceManager.startBluetoothLEService()
+        CoroutineScope(Dispatchers.IO).launch {
+            SMSManager.sendMessage(
+                "09760041542",
+                "RestartReceiver triggered ${android.os.Build.MODEL} - ${Date()}."
+            )
+        }
     }
 }
