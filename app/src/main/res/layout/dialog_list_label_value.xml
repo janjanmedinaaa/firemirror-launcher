@@ -6,14 +6,15 @@
     android:layout_height="wrap_content">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_bluetooth_devices"
+        android:id="@+id/recycler_view"
         android:layout_width="@dimen/dp_370"
         android:layout_height="@dimen/dp_370"
         android:clipToPadding="false"
         android:paddingTop="@dimen/default_padding"
+        android:paddingBottom="@dimen/dp_16"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_bluetooth_device" />
+        tools:listitem="@layout/item_list_label_value" />
 </androidx.constraintlayout.widget.ConstraintLayout>

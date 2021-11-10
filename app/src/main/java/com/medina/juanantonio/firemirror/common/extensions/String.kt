@@ -8,6 +8,7 @@ import com.medina.juanantonio.firemirror.data.models.Lyrics
 import com.medina.juanantonio.firemirror.data.models.Quote
 import com.medina.juanantonio.firemirror.data.models.SpotifyAccessToken
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
+import java.util.*
 
 fun String.toCurrentWeather(): CurrentWeather {
     return Gson().fromJson(this, CurrentWeather::class.java)
@@ -33,3 +34,10 @@ fun String.toLyrics(): Lyrics {
 fun String.toBase64(): String {
     return Base64.encodeToString(toByteArray(), Base64.NO_WRAP)
 }
+
+fun String.toCapitalCase() = lowercase().replaceFirstChar {
+    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+}
+
+fun String.snakeToCapitalize(): String =
+    split("_").joinToString(separator = " ") { it.toCapitalCase() }

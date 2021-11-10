@@ -20,7 +20,6 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEService
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.adapters.BluetoothDevicesAdapter
-import com.medina.juanantonio.firemirror.databinding.DialogBluetoothDevicesBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +31,7 @@ import kotlin.collections.HashMap
 import android.content.Context.WIFI_SERVICE
 import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
+import com.medina.juanantonio.firemirror.databinding.DialogListLabelValueBinding
 import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import java.math.BigInteger
 import java.net.InetAddress
@@ -42,7 +42,7 @@ class BluetoothDevicesListDialog :
     DialogFragment(),
     BluetoothDevicesAdapter.BleDeviceListener {
 
-    private var binding: DialogBluetoothDevicesBinding by autoCleared()
+    private var binding: DialogListLabelValueBinding by autoCleared()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     private lateinit var bluetoothDevicesAdapter: BluetoothDevicesAdapter
@@ -77,7 +77,7 @@ class BluetoothDevicesListDialog :
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DialogBluetoothDevicesBinding.inflate(
+        binding = DialogListLabelValueBinding.inflate(
             inflater,
             container,
             false
@@ -87,7 +87,7 @@ class BluetoothDevicesListDialog :
 
     override fun onResume() {
         super.onResume()
-        mainViewModel.currentScreenLayout = R.layout.dialog_bluetooth_devices
+        mainViewModel.currentScreenLayout = R.layout.dialog_list_label_value
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -99,7 +99,7 @@ class BluetoothDevicesListDialog :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bluetoothDevicesAdapter = BluetoothDevicesAdapter(this)
-        binding.recyclerViewBluetoothDevices.apply {
+        binding.recyclerView.apply {
             adapter = bluetoothDevicesAdapter
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         }

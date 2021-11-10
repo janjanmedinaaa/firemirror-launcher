@@ -36,7 +36,7 @@
         android:id="@+id/bluetoothDevicesListDialog"
         android:name="com.medina.juanantonio.firemirror.common.dialogs.BluetoothDevicesListDialog"
         android:label="BluetoothDevicesListDialog"
-        tools:layout="@layout/dialog_bluetooth_devices">
+        tools:layout="@layout/dialog_list_label_value">
 
         <action
             android:id="@+id/action_bluetoothDevicesListDialog_to_imageViewerDialog"
@@ -57,5 +57,15 @@
             android:name="deviceMacAddressArg"
             app:argType="string"
             app:nullable="false" />
+
+        <action
+            android:id="@+id/action_LEDOptionsDialog_to_labelValueListDialog"
+            app:destination="@id/labelValueListDialog" />
     </dialog>
+
+    <dialog
+        android:id="@+id/labelValueListDialog"
+        android:name="com.medina.juanantonio.firemirror.common.dialogs.LabelValueListDialog"
+        android:label="LabelValueListDialog"
+        tools:layout="@layout/dialog_list_label_value" />
 </navigation>

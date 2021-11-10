@@ -4,6 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
+import com.medina.juanantonio.firemirror.common.utils.Event
+import com.medina.juanantonio.firemirror.data.commander.BLEDOMCommander
 import com.medina.juanantonio.firemirror.data.managers.IBLEDOMDevicesManager
 import com.medina.juanantonio.firemirror.data.models.LEDData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,8 +18,11 @@ class LEDOptionsViewModel @Inject constructor(
     private var bleDomDevicesManager: IBLEDOMDevicesManager
 ) : ViewModel() {
 
-    val ledData = MutableLiveData<LEDData>()
+    val ledData = MutableLiveData<Event<LEDData>>()
+
     var macAddress = ""
+    var currentColorEffect: BLEDOMCommander.ColorEffect? = null
+
     private var jobSaveConfig: Job? = null
 
     fun writeToDevice(command: ByteArray) {
@@ -28,7 +33,7 @@ class LEDOptionsViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val ledData = bleDomDevicesManager.getDevice(macAddress)?.ledData ?: return@launch
             withContext(Dispatchers.Main) {
-                this@LEDOptionsViewModel.ledData.value = ledData
+                this@LEDOptionsViewModel.ledData.value = Event(ledData)
             }
         }
     }

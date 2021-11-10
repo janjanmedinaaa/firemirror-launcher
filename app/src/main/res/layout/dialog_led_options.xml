@@ -3,8 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/dp_370"
-    android:layout_height="@dimen/dp_300"
+    android:layout_height="@dimen/dp_370"
     android:paddingHorizontal="@dimen/default_padding">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_show_effects"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/show_effects"
+        app:layout_constraintBottom_toBottomOf="@id/switch_power"
+        app:layout_constraintEnd_toStartOf="@id/switch_power"
+        app:layout_constraintTop_toTopOf="@id/switch_power" />
 
     <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/switch_power"
@@ -22,6 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_16"
         android:fontFamily="@font/roboto_light"
+        android:text="@string/red_label_default"
         android:textSize="@dimen/sp_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -46,6 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
+        android:text="@string/green_label_default"
         android:textSize="@dimen/sp_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/slider_red"
@@ -70,6 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
+        android:text="@string/blue_label_default"
         android:textSize="@dimen/sp_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/slider_green"
@@ -94,6 +109,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto_light"
+        android:text="@string/brightness_label_default"
         android:textSize="@dimen/sp_16"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/slider_blue"
@@ -112,4 +128,29 @@
         app:thumbColor="@color/white"
         app:tickColor="@color/white"
         app:trackColor="@color/white" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text_view_speed_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:text="@string/speed_label_default"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/slider_brightness"
+        tools:text="Brightness (100)" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:stepSize="1"
+        android:valueFrom="0"
+        android:valueTo="100"
+        app:layout_constraintTop_toBottomOf="@id/text_view_speed_label"
+        app:thumbColor="@color/white"
+        app:tickColor="@color/yellow"
+        app:trackColor="@color/yellow" />
 </androidx.constraintlayout.widget.ConstraintLayout>

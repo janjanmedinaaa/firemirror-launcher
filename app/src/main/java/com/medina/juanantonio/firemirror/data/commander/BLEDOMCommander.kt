@@ -1,6 +1,8 @@
 package com.medina.juanantonio.firemirror.data.commander
 
 import androidx.annotation.IntRange
+import com.medina.juanantonio.firemirror.common.extensions.toLabelValue
+import com.medina.juanantonio.firemirror.data.models.LabelValue
 
 /**
  * Controller for sending commands to Chinese generic Bluetooth receiver
@@ -29,6 +31,14 @@ object BLEDOMCommander {
 
         const val COMMAND_ARG_1_TEMPERATURE: Byte = 0x02
         const val COMMAND_ARG_1_MODE_EFFECT: Byte = 0x03
+    }
+
+    fun getColorEffects(): ArrayList<LabelValue> {
+        return arrayListOf<LabelValue>().apply {
+            ColorEffect.values().forEach { colorEffect ->
+                add(colorEffect.toLabelValue())
+            }
+        }
     }
 
     fun setBrightness(

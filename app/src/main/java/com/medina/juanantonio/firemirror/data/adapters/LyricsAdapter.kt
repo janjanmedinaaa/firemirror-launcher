@@ -6,8 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.medina.juanantonio.firemirror.databinding.ItemLyricsBinding
 
-class LyricsAdapter(
-) : RecyclerView.Adapter<LyricsAdapter.LyricsItemViewHolder>() {
+class LyricsAdapter : RecyclerView.Adapter<LyricsAdapter.LyricsItemViewHolder>() {
     private val lyricsList = arrayListOf<String>()
 
     override fun onCreateViewHolder(

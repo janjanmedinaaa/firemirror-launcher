@@ -27,9 +27,16 @@
 
     <string name="click_count_format">Click count: %d</string>
 
+    <string name="show_effects">Show Effects</string>
     <string name="red_label_format">Red (%d)</string>
     <string name="green_label_format">Green (%d)</string>
     <string name="blue_label_format">Blue (%d)</string>
     <string name="brightness_label_format">Brightness (%d)</string>
-    <string name="temperature_label_format">Temperature (%d)</string>
+    <string name="speed_label_format">Speed (%d)</string>
+
+    <string name="red_label_default">Red (0)</string>
+    <string name="green_label_default">Green (0)</string>
+    <string name="blue_label_default">Blue (0)</string>
+    <string name="brightness_label_default">Brightness (0)</string>
+    <string name="speed_label_default">Speed (0)</string>
 </resources>
