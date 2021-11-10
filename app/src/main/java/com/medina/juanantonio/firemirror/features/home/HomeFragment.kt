@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import coil.load
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_ACCESS_TOKEN
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_CODE
 import com.medina.juanantonio.firemirror.common.Constants.PreferencesKey.SPOTIFY_REFRESH_TOKEN
@@ -21,10 +22,9 @@ import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.common.views.SpotifyView
 import com.medina.juanantonio.firemirror.common.views.StackLayoutManager
 import com.medina.juanantonio.firemirror.data.adapters.LyricsAdapter
-import com.medina.juanantonio.firemirror.data.managers.FocusManager
-import com.medina.juanantonio.firemirror.data.managers.HolidayManager
-import com.medina.juanantonio.firemirror.data.managers.IAppManager
-import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.commander.BLEDOMCommander
+import com.medina.juanantonio.firemirror.data.managers.*
+import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
 import com.medina.juanantonio.firemirror.data.models.SpotifyCurrentTrack
 import com.medina.juanantonio.firemirror.data.models.listdisplay.DefaultListDisplayItem
 import com.medina.juanantonio.firemirror.data.models.listdisplay.IconLabelListDisplayItem
@@ -56,6 +56,12 @@ class HomeFragment : Fragment() {
 
     @Inject
     lateinit var dataStoreManager: IDataStoreManager
+
+    @Inject
+    lateinit var bluetoothLeManager: IBluetoothLEManager
+
+    @Inject
+    lateinit var bleDomDevicesManager: IBLEDOMDevicesManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -274,6 +280,23 @@ class HomeFragment : Fragment() {
                     if (nextItem > lyricsMaxIndex) return@observe
 
                     stackLayoutManager.scrollToPosition(nextItem)
+                }
+                KeyEvent.KEYCODE_MENU -> {
+                    bluetoothLeManager.bleDeviceHashMap
+                        .filter { (_, device) -> device.isConnected && device is BLEDOMDevice }
+                        .forEach { (macAddress, device) ->
+                            if (device is BLEDOMDevice) {
+                                viewModel.viewModelScope.launch {
+                                    val newStatus =
+                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+
+                                    bluetoothLeManager.writeToDevice(
+                                        macAddress,
+                                        BLEDOMCommander.setPower(newStatus)
+                                    )
+                                }
+                            }
+                        }
                 }
             }
         }

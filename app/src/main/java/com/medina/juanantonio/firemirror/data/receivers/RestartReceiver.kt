@@ -84,6 +84,7 @@ class RestartReceiver : HiltBroadcastReceiver() {
         bluetoothLEServiceManager.startBluetoothLEService()
         CoroutineScope(Dispatchers.IO).launch {
             SMSManager.sendMessage(
+                context,
                 "09760041542",
                 "RestartReceiver triggered ${android.os.Build.MODEL} - ${Date()}."
             )

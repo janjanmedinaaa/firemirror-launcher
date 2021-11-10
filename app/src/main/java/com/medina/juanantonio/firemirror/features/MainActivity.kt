@@ -22,14 +22,13 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val viewModel: MainViewModel by viewModels()
 
     @Inject
     lateinit var bluetoothLEServiceManager: BluetoothLEServiceManager
 
     @Inject
     lateinit var fireMirrorServer: FireMirrorServer
-
-    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +70,8 @@ class MainActivity : AppCompatActivity() {
             event?.keyCode == KeyEvent.KEYCODE_DPAD_UP ||
             event?.keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
             event?.keyCode == KeyEvent.KEYCODE_MEDIA_REWIND ||
-            event?.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
+            event?.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD ||
+            event?.keyCode == KeyEvent.KEYCODE_MENU
         ) {
             if (event.action == 0)
                 viewModel.dispatchKeyEvent.value = event
