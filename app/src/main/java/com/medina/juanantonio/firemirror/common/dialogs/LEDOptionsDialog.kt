@@ -20,7 +20,6 @@ import com.medina.juanantonio.firemirror.data.models.LEDData
 import com.medina.juanantonio.firemirror.databinding.DialogLedOptionsBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -60,7 +59,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
     override fun onItemClicked(item: Any) {
         if (item !is BLEDOMCommander.ColorEffect) return
         viewModel.currentColorEffect = item
-        updateColorEffect(item, saveConfig = true)
+        updateColorEffect(item)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -93,7 +92,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
                     text = getString(R.string.red_label_format, value.toInt())
                     if (fromUser) {
                         viewModel.currentColorEffect = null
-                        updateRGB(saveConfig = true)
+                        updateRGB(red = value.toInt())
                     }
                 }
                 it.setOnFocusChangeListener { _, isFocused ->
@@ -108,7 +107,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
                     text = getString(R.string.green_label_format, value.toInt())
                     if (fromUser) {
                         viewModel.currentColorEffect = null
-                        updateRGB(saveConfig = true)
+                        updateRGB(green = value.toInt())
                     }
                 }
                 it.setOnFocusChangeListener { _, isFocused ->
@@ -123,7 +122,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
                     text = getString(R.string.blue_label_format, value.toInt())
                     if (fromUser) {
                         viewModel.currentColorEffect = null
-                        updateRGB(saveConfig = true)
+                        updateRGB(blue = value.toInt())
                     }
                 }
                 it.setOnFocusChangeListener { _, isFocused ->
@@ -136,7 +135,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
             binding.textViewBrightnessLabel.apply {
                 it.addOnChangeListener { _, value, fromUser ->
                     text = getString(R.string.brightness_label_format, value.toInt())
-                    if (fromUser) updateBrightness(value.toInt(), saveConfig = true)
+                    if (fromUser) updateBrightness(value.toInt())
                 }
                 it.setOnFocusChangeListener { _, isFocused ->
                     animateTextSize(if (isFocused) 20f else 16f)
@@ -148,7 +147,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
             binding.textViewSpeedLabel.apply {
                 it.addOnChangeListener { _, value, fromUser ->
                     text = getString(R.string.speed_label_format, value.toInt())
-                    if (fromUser) updateSpeed(value.toInt(), saveConfig = true)
+                    if (fromUser) updateSpeed(value.toInt())
                 }
                 it.setOnFocusChangeListener { _, isFocused ->
                     animateTextSize(if (isFocused) 20f else 16f)
@@ -170,19 +169,9 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
 
             viewModel.currentColorEffect = it.colorEffect
             viewModel.viewModelScope.launch {
-                updatePowerStatus(it.isOn)
-                delay(20)
-
-                if (it.colorEffect != null) {
-                    updateColorEffect(it.colorEffect)
-                } else {
-                    updateRGB(red = it.red, green = it.green, blue = it.blue)
-                    delay(20)
-                    updateBrightness(it.brightness)
+                it.getCommandBytes { byteArray ->
+                    viewModel.writeToDevice(byteArray)
                 }
-
-                delay(20)
-                updateSpeed(it.speed)
             }
         }
     }
@@ -197,10 +186,9 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
     private fun updateRGB(
         red: Int = binding.sliderRed.value.toInt(),
         green: Int = binding.sliderGreen.value.toInt(),
-        blue: Int = binding.sliderBlue.value.toInt(),
-        saveConfig: Boolean = false
+        blue: Int = binding.sliderBlue.value.toInt()
     ) {
-        if (saveConfig) saveConfig(red = red, green = green, blue = blue)
+        saveConfig(red = red, green = green, blue = blue)
         viewModel.writeToDevice(
             BLEDOMCommander.setColorRGB(
                 red = red,
@@ -210,28 +198,22 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
         )
     }
 
-    private fun updateBrightness(brightness: Int, saveConfig: Boolean = false) {
-        if (saveConfig) saveConfig(brightness = brightness)
+    private fun updateBrightness(brightness: Int) {
+        saveConfig(brightness = brightness)
         viewModel.writeToDevice(
             BLEDOMCommander.setBrightness(brightness)
         )
     }
 
-    private fun updateSpeed(
-        speed: Int,
-        saveConfig: Boolean = false
-    ) {
-        if (saveConfig) saveConfig(speed = speed)
+    private fun updateSpeed(speed: Int) {
+        saveConfig(speed = speed)
         viewModel.writeToDevice(
             BLEDOMCommander.setSpeed(speed)
         )
     }
 
-    private fun updateColorEffect(
-        colorEffect: BLEDOMCommander.ColorEffect?,
-        saveConfig: Boolean = false
-    ) {
-        if (saveConfig) saveConfig(colorEffect = colorEffect)
+    private fun updateColorEffect(colorEffect: BLEDOMCommander.ColorEffect?) {
+        saveConfig(colorEffect = colorEffect)
         colorEffect?.let {
             viewModel.writeToDevice(
                 BLEDOMCommander.setModeEffect(it)

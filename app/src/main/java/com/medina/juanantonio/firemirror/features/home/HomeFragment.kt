@@ -37,7 +37,11 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.*
 import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -287,13 +291,36 @@ class HomeFragment : Fragment() {
                         .forEach { (macAddress, device) ->
                             if (device is BLEDOMDevice) {
                                 viewModel.viewModelScope.launch {
-                                    val newStatus =
-                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+//                                    val newStatus =
+//                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+//
+//                                    bluetoothLeManager.writeToDevice(
+//                                        macAddress,
+//                                        BLEDOMCommander.setPower(newStatus)
+//                                    )
 
-                                    bluetoothLeManager.writeToDevice(
-                                        macAddress,
-                                        BLEDOMCommander.setPower(newStatus)
-                                    )
+                                    Timer().schedule(10000) {
+                                        runBlocking {
+                                            device.ledData.getCommandBytes { byteArray ->
+                                                bluetoothLeManager.writeToDevice(
+                                                    macAddress,
+                                                    byteArray
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    BLEDOMCommander.setMultipleCommands(
+                                        BLEDOMCommander.setModeEffect(
+                                            BLEDOMCommander.ColorEffect.BLINK_RED
+                                        ),
+                                        BLEDOMCommander.setSpeed(80)
+                                    ) { byteArray ->
+                                        bluetoothLeManager.writeToDevice(
+                                            macAddress,
+                                            byteArray
+                                        )
+                                    }
                                 }
                             }
                         }

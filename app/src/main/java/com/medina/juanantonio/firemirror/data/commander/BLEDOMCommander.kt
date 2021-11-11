@@ -3,6 +3,7 @@ package com.medina.juanantonio.firemirror.data.commander
 import androidx.annotation.IntRange
 import com.medina.juanantonio.firemirror.common.extensions.toLabelValue
 import com.medina.juanantonio.firemirror.data.models.LabelValue
+import kotlinx.coroutines.delay
 
 /**
  * Controller for sending commands to Chinese generic Bluetooth receiver
@@ -13,6 +14,10 @@ import com.medina.juanantonio.firemirror.data.models.LabelValue
  * https://github.com/TheSylex/ELK-BLEDOM-bluetooth-led-strip-controller
  */
 object BLEDOMCommander {
+
+    object Utils {
+        const val COMMAND_DELAY = 10L
+    }
 
     object CommandBytes {
         const val COMMAND_START_BYTE: Byte = 0x7E
@@ -117,6 +122,16 @@ object BLEDOMCommander {
             commandArg2 = green.toByte(),
             commandArg3 = blue.toByte()
         )
+    }
+
+    suspend fun setMultipleCommands(
+        vararg command: ByteArray,
+        onBytes: (ByteArray) -> Unit
+    ) {
+        command.forEach {
+            onBytes(it)
+            delay(Utils.COMMAND_DELAY)
+        }
     }
 
     private fun setupCommandByteArray(

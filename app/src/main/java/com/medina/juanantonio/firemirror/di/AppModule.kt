@@ -6,7 +6,20 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEManager
 import com.medina.juanantonio.firemirror.ble.BluetoothLEServiceManager
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.data.database.FireMirrorDb
-import com.medina.juanantonio.firemirror.data.managers.*
+import com.medina.juanantonio.firemirror.data.managers.AppManager
+import com.medina.juanantonio.firemirror.data.managers.BLEDOMDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.BlueButtDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.DataStoreManager
+import com.medina.juanantonio.firemirror.data.managers.IAppManager
+import com.medina.juanantonio.firemirror.data.managers.IBLEDOMDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.IDataStoreManager
+import com.medina.juanantonio.firemirror.data.managers.IOpenWeatherManager
+import com.medina.juanantonio.firemirror.data.managers.IPusherManager
+import com.medina.juanantonio.firemirror.data.managers.ISpotifyManager
+import com.medina.juanantonio.firemirror.data.managers.OpenWeatherManager
+import com.medina.juanantonio.firemirror.data.managers.PusherManager
+import com.medina.juanantonio.firemirror.data.managers.SpotifyManager
 import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import dagger.Module
 import dagger.Provides
@@ -106,5 +119,13 @@ class AppModule {
             bluetoothLEManager,
             8080
         )
+    }
+
+    @Provides
+    @Singleton
+    fun providePusherManager(
+        @ApplicationContext context: Context
+    ): IPusherManager {
+        return PusherManager(context)
     }
 }

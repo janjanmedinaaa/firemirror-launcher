@@ -10,13 +10,10 @@ import kotlinx.coroutines.CompletableDeferred
 
 class OpenWeatherManager(context: Context) : IOpenWeatherManager {
 
+    private val apiKey = context.getString(R.string.openWeatherKey)
+
     companion object {
         const val BASE_URL = "https://api.openweathermap.org/data/2.5"
-        var API_KEY = ""
-    }
-
-    init {
-        API_KEY = context.getString(R.string.openWeatherKey)
     }
 
     override suspend fun getCurrentWeather(zipCode: String, countryCode: String): CurrentWeather {
@@ -25,7 +22,7 @@ class OpenWeatherManager(context: Context) : IOpenWeatherManager {
         val request = currentWeatherAPI.httpGet(
             parameters = listOf(
                 Pair("zip", "$zipCode,$countryCode"),
-                Pair("appid", API_KEY),
+                Pair("appid", apiKey),
                 Pair("units", "metric")
             )
         )

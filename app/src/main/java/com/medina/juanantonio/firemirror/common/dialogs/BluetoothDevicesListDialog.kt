@@ -2,9 +2,11 @@ package com.medina.juanantonio.firemirror.common.dialogs
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.WIFI_SERVICE
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,22 +22,19 @@ import com.medina.juanantonio.firemirror.ble.BluetoothLEService
 import com.medina.juanantonio.firemirror.ble.IBluetoothLEManager
 import com.medina.juanantonio.firemirror.common.utils.autoCleared
 import com.medina.juanantonio.firemirror.data.adapters.BluetoothDevicesAdapter
+import com.medina.juanantonio.firemirror.data.models.BleDevice
+import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
+import com.medina.juanantonio.firemirror.databinding.DialogListLabelValueBinding
 import com.medina.juanantonio.firemirror.features.MainViewModel
+import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import android.net.wifi.WifiManager
-import kotlin.collections.HashMap
-import android.content.Context.WIFI_SERVICE
-import com.medina.juanantonio.firemirror.data.models.BleDevice
-import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
-import com.medina.juanantonio.firemirror.databinding.DialogListLabelValueBinding
-import com.medina.juanantonio.firemirror.features.server.FireMirrorServer
 import java.math.BigInteger
 import java.net.InetAddress
 import java.nio.ByteOrder
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class BluetoothDevicesListDialog :
@@ -131,7 +130,8 @@ class BluetoothDevicesListDialog :
                             getString(R.string.qr_url_600, serverLink)
                         )
                 )
-            } else -> {
+            }
+            else -> {
                 findNavController().navigate(
                     BluetoothDevicesListDialogDirections
                         .actionBluetoothDevicesListDialogToLEDOptionsDialog(

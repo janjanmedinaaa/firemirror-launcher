@@ -22,10 +22,10 @@ class SpotifyManager(
     context: Context
 ) : ISpotifyManager {
 
-    companion object {
-        var CLIENT_ID = ""
-        var CLIENT_SECRET = ""
+    private val clientId = context.getString(R.string.spotifyClientId)
+    private val clientSecret = context.getString(R.string.spotifyClientSecret)
 
+    companion object {
         const val REQUEST_CODE = 1337
         const val REDIRECT_URL = "com.medina.juanantonio.firemirror://callback"
 
@@ -37,16 +37,11 @@ class SpotifyManager(
         const val TAG = "SpotifyManager"
     }
 
-    init {
-        CLIENT_ID = context.getString(R.string.spotifyClientId)
-        CLIENT_SECRET = context.getString(R.string.spotifyClientSecret)
-    }
-
     override fun authenticate(activity: Activity, externalBrowser: Boolean): String {
         return try {
             val state = Random.nextInt(100000, 999999).toString()
             val builder = AuthorizationRequest.Builder(
-                CLIENT_ID,
+                clientId,
                 AuthorizationResponse.Type.CODE,
                 REDIRECT_URL
             ).setScopes(arrayOf("user-read-playback-state"))
@@ -70,7 +65,7 @@ class SpotifyManager(
         val request = REQUEST_ACCESS_TOKEN_URL.httpPost()
         request.header(
             mapOf(
-                "Authorization" to "Basic ${("$CLIENT_ID:$CLIENT_SECRET").toBase64()}",
+                "Authorization" to "Basic ${("$clientId:$clientSecret").toBase64()}",
                 "Content-Type" to "application/x-www-form-urlencoded"
             )
         )
@@ -95,7 +90,7 @@ class SpotifyManager(
         val request = REQUEST_ACCESS_TOKEN_URL.httpPost()
         request.header(
             mapOf(
-                "Authorization" to "Basic ${("$CLIENT_ID:$CLIENT_SECRET").toBase64()}",
+                "Authorization" to "Basic ${("$clientId:$clientSecret").toBase64()}",
                 "Content-Type" to "application/x-www-form-urlencoded"
             )
         )

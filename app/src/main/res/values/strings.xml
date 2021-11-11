@@ -39,4 +39,7 @@
     <string name="blue_label_default">Blue (0)</string>
     <string name="brightness_label_default">Brightness (0)</string>
     <string name="speed_label_default">Speed (0)</string>
+
+    <string name="pusherChannel">commandChannel</string>
+    <string name="pusherEvent">commandEvent</string>
 </resources>

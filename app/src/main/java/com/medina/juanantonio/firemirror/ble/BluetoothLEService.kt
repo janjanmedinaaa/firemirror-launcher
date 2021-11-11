@@ -7,21 +7,22 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.medina.juanantonio.firemirror.R
 import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
+import com.medina.juanantonio.firemirror.data.managers.IPusherManager
 import com.medina.juanantonio.firemirror.data.models.BleDevice
+import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
+import com.medina.juanantonio.firemirror.features.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
-import com.medina.juanantonio.firemirror.features.MainActivity
 import java.util.*
-import kotlin.collections.HashMap
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
@@ -32,6 +33,8 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
         const val STOP_SERVICE = "STOP_SERVICE"
         const val SCANNED_DEVICES = "SCANNED_DEVICES"
         const val BLE_DEVICES = "BLE_DEVICES"
+
+        const val TAG = "bluetoothLEService"
     }
 
     private val localBroadcastManager by lazy {
@@ -44,15 +47,20 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
     @Inject
     lateinit var blueButtDevicesManager: IBlueButtDevicesManager
 
+    @Inject
+    lateinit var pusherManager: IPusherManager
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.getStringExtra(SERVICE_ACTION) ?: "") {
             START_SERVICE -> {
                 startDeviceScan()
                 startForeground()
+                startPusher()
                 return Service.START_STICKY
             }
             STOP_SERVICE -> {
                 stopDeviceScan()
+                stopPusher()
                 stopSelf()
             }
         }
@@ -67,8 +75,26 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
         bluetoothLEManager.stopScan()
     }
 
+    private fun startPusher() {
+        CoroutineScope(Dispatchers.IO).launch {
+            pusherManager.connect()
+            pusherManager.subscribe(
+                getString(R.string.pusherChannel),
+                getString(R.string.pusherEvent)
+            ) { event ->
+                Log.i(TAG, "Received event with data: $event")
+            }
+        }
+    }
+
+    private fun stopPusher() {
+        pusherManager.unsubscribe(getString(R.string.pusherChannel))
+        pusherManager.disconnect()
+    }
+
     override fun onTaskRemoved(rootIntent: Intent?) {
         stopDeviceScan()
+        stopPusher()
         stopSelf()
         super.onTaskRemoved(rootIntent)
     }
@@ -109,48 +135,6 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
             .setOngoing(true)
             .build()
         startForeground(notificationId, notification)
-    }
-
-    @SuppressLint("UnspecifiedImmutableFlag")
-    private fun showActionNotification(blueButtDevice: BlueButtDevice) {
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            notificationIntent,
-            PendingIntent.FLAG_ONE_SHOT
-        )
-
-        val channelId = "BlueButtNotificationChannel"
-        val channelName = getString(R.string.blue_butt_trigger_channel_name)
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationChannel.setShowBadge(false)
-            notificationChannel.description =
-                getString(R.string.blue_butt_trigger_channel_description)
-            notificationManager.createNotificationChannel(notificationChannel)
-        }
-
-        val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle(getString(R.string.blue_butt_trigger_notification_content_title))
-            .setContentText(
-                getString(
-                    R.string.blue_butt_trigger_notification_content_text,
-                    blueButtDevice.getDeviceName()
-                )
-            )
-            .setSmallIcon(R.mipmap.ic_launcher_round)
-            .setContentIntent(pendingIntent)
-            .build()
-
-        notificationManager.notify(Date().time.toInt(), notification)
     }
 
     override fun onScanResult(bluetoothDeviceList: HashMap<String, BleDevice>) {
