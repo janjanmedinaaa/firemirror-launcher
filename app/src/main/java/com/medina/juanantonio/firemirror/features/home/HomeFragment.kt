@@ -35,13 +35,10 @@ import com.medina.juanantonio.firemirror.databinding.ItemListDisplaySpotifyBindi
 import com.medina.juanantonio.firemirror.features.MainViewModel
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
-import kotlin.concurrent.schedule
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -291,36 +288,13 @@ class HomeFragment : Fragment() {
                         .forEach { (macAddress, device) ->
                             if (device is BLEDOMDevice) {
                                 viewModel.viewModelScope.launch {
-//                                    val newStatus =
-//                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
-//
-//                                    bluetoothLeManager.writeToDevice(
-//                                        macAddress,
-//                                        BLEDOMCommander.setPower(newStatus)
-//                                    )
+                                    val newStatus =
+                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
 
-                                    Timer().schedule(10000) {
-                                        runBlocking {
-                                            device.ledData.getCommandBytes { byteArray ->
-                                                bluetoothLeManager.writeToDevice(
-                                                    macAddress,
-                                                    byteArray
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    BLEDOMCommander.setMultipleCommands(
-                                        BLEDOMCommander.setModeEffect(
-                                            BLEDOMCommander.ColorEffect.BLINK_RED
-                                        ),
-                                        BLEDOMCommander.setSpeed(80)
-                                    ) { byteArray ->
-                                        bluetoothLeManager.writeToDevice(
-                                            macAddress,
-                                            byteArray
-                                        )
-                                    }
+                                    bluetoothLeManager.writeToDevice(
+                                        macAddress,
+                                        BLEDOMCommander.setPower(newStatus)
+                                    )
                                 }
                             }
                         }

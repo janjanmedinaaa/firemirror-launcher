@@ -3,6 +3,7 @@ package com.medina.juanantonio.firemirror.data.models
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import java.util.*
 
 @Entity
 class BLEDOMDevice(
@@ -21,6 +22,9 @@ class BLEDOMDevice(
 
     @Ignore
     override var isPaired: Boolean = false
+
+    @Ignore
+    override var lastSeen: Long = Date().time
 
     var ledData: LEDData = LEDData()
 }

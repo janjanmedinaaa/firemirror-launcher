@@ -47,9 +47,15 @@ class PusherManager(context: Context) : IPusherManager {
         eventName: String,
         action: (PusherEvent) -> Unit
     ): Channel {
-        val channel = pusher.subscribe(channelName)
-        channel.bind(eventName, action)
-        return channel
+        return try {
+            pusher.subscribe(channelName).apply {
+                bind(eventName, action)
+            }
+        } catch (e: Exception) {
+            pusher.getChannel(channelName).apply {
+                bind(eventName, action)
+            }
+        }
     }
 
     override fun unsubscribe(channelName: String) {

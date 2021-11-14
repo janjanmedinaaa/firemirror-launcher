@@ -125,6 +125,16 @@ object BLEDOMCommander {
     }
 
     suspend fun setMultipleCommands(
+        commands: ArrayList<ByteArray>,
+        onBytes: (ByteArray) -> Unit
+    ) {
+        commands.forEach {
+            onBytes(it)
+            delay(Utils.COMMAND_DELAY)
+        }
+    }
+
+    suspend fun setMultipleCommands(
         vararg command: ByteArray,
         onBytes: (ByteArray) -> Unit
     ) {

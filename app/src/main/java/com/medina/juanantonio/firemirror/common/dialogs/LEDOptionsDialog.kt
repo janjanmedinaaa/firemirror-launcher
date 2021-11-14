@@ -169,7 +169,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
 
             viewModel.currentColorEffect = it.colorEffect
             viewModel.viewModelScope.launch {
-                it.getCommandBytes { byteArray ->
+                BLEDOMCommander.setMultipleCommands(it.getCommandBytes()) { byteArray ->
                     viewModel.writeToDevice(byteArray)
                 }
             }

@@ -42,6 +42,7 @@ class HomeViewModel @Inject constructor(
     var currentLyricsTitle = ""
 
     fun setupWeatherTimerTask() {
+        weatherTimerTask?.cancel()
         weatherTimerTask = Timer().schedule(0, 900000) {
             viewModelScope.launch {
                 getCurrentWeather()

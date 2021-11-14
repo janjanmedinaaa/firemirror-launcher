@@ -12,8 +12,11 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.medina.juanantonio.firemirror.R
+import com.medina.juanantonio.firemirror.data.commander.BLEDOMCommander
+import com.medina.juanantonio.firemirror.data.managers.IBLEDOMDevicesManager
 import com.medina.juanantonio.firemirror.data.managers.IBlueButtDevicesManager
 import com.medina.juanantonio.firemirror.data.managers.IPusherManager
+import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
 import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import com.medina.juanantonio.firemirror.features.MainActivity
@@ -46,6 +49,9 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
 
     @Inject
     lateinit var blueButtDevicesManager: IBlueButtDevicesManager
+
+    @Inject
+    lateinit var bleDomDevicesManager: IBLEDOMDevicesManager
 
     @Inject
     lateinit var pusherManager: IPusherManager
@@ -152,18 +158,27 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
     private fun runBlueButtTriggerAction(blueButtDevice: BlueButtDevice) {
         CoroutineScope(Dispatchers.IO).launch {
             blueButtDevicesManager.updateClickCount(blueButtDevice.macAddress)
-            blueButtDevice.runRequest()
 
             bluetoothLEManager.bleDeviceHashMap[blueButtDevice.macAddress]?.run {
                 if (this !is BlueButtDevice) return@run
 
                 clickCount++
-                switchMode?.let { status ->
-                    switchMode = !status
-                    blueButtDevicesManager.updateSwitchModeStatus(macAddress)
-                }
                 bluetoothLEManager.refreshDeviceList()
             }
+
+            bluetoothLEManager.bleDeviceHashMap
+                .filter { (_, device) -> device.isConnected && device is BLEDOMDevice }
+                .forEach { (macAddress, device) ->
+                    if (device is BLEDOMDevice) {
+                        val newStatus =
+                            bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+
+                        bluetoothLEManager.writeToDevice(
+                            macAddress,
+                            BLEDOMCommander.setPower(newStatus)
+                        )
+                    }
+                }
         }
     }
 }
