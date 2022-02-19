@@ -19,6 +19,7 @@ import com.medina.juanantonio.firemirror.data.models.BLEDOMDevice
 import com.medina.juanantonio.firemirror.data.models.BleDevice
 import com.medina.juanantonio.firemirror.data.models.BlueButtDevice
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import java.util.*
@@ -47,6 +48,7 @@ class BluetoothLEManager(
     private var bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
     override lateinit var leScanCallBack: BluetoothLeScanCallBack
     private var verifyBleDeviceTask: TimerTask? = null
+    private var deviceBeingEdited = false
 
     private val scanSettings =
         ScanSettings
@@ -76,7 +78,7 @@ class BluetoothLEManager(
             Log.d(TAG, "Scanned $callbackType $macAddress")
 
             if (bleDeviceHashMap.containsKey(macAddress)) {
-                bleDeviceHashMap[macAddress]?.lastSeen = Date().time
+                bleDeviceHashMap[macAddress]?.lastSeen = System.currentTimeMillis()
                 createBleConnection(macAddress)
                 return
             }
@@ -90,6 +92,7 @@ class BluetoothLEManager(
                             alias = ""
                         ).apply {
                             this.macAddress = macAddress
+                           lastSeen = System.currentTimeMillis()
                         }
                     } else {
                         blueButtDevicesManager.getDevice(macAddress) ?: BlueButtDevice(
@@ -97,6 +100,7 @@ class BluetoothLEManager(
                             alias = ""
                         ).apply {
                             this.macAddress = macAddress
+                            lastSeen = System.currentTimeMillis()
                         }
                     }
 
@@ -128,25 +132,7 @@ class BluetoothLEManager(
             scanSettings,
             scanCallback
         )
-
-        verifyBleDeviceTask?.cancel()
-        verifyBleDeviceTask = Timer().schedule(0, 2000) {
-            // Items should not be directly removed from forEach
-            // loop, causes ConcurrentModificationException
-            val addressesToRemove = arrayListOf<String>()
-
-            bleDeviceHashMap.forEach { (address, bleDevice) ->
-                if (bleDevice.notAvailable) {
-                    Log.d(TAG, "Device not found - $address")
-                    addressesToRemove.add(address)
-                }
-            }
-
-            if (addressesToRemove.isNotEmpty()) {
-                addressesToRemove.forEach { bleDeviceHashMap.remove(it) }
-                refreshDeviceList()
-            }
-        }
+        resetVerifyBleDevicesTask()
 
         Log.d(TAG, "BLE Scanner started Scanning - $bluetoothLeScanner")
     }
@@ -192,13 +178,14 @@ class BluetoothLEManager(
 
     override suspend fun connectDevice(address: String) {
         Log.d(TAG, "$address connectDevice")
+        deviceBeingEdited = true
 
         bleConnectionHashMap[address] ?: createBleConnection(address)
         val device = bleConnectionHashMap[address]
         device?.connect()
 
         bleDeviceHashMap[address]?.isDeviceLoading = true
-        bleDeviceHashMap[address]?.lastSeen = Date().time
+        bleDeviceHashMap[address]?.lastSeen = System.currentTimeMillis()
         refreshDeviceList()
 
         val bleDevice = bleDeviceHashMap[address] ?: return
@@ -213,6 +200,7 @@ class BluetoothLEManager(
             }
         }
         bleDeviceHashMap[address]?.isPreviouslyConnected = true
+        deviceBeingEdited = false
     }
 
     override fun bondDevice(address: String) {
@@ -227,6 +215,7 @@ class BluetoothLEManager(
 
     override suspend fun disconnectDevice(address: String) {
         Log.d(TAG, "$address disconnectDevice")
+        deviceBeingEdited = true
 
         val bleDevice = bleDeviceHashMap[address] ?: return
         when (bleDevice) {
@@ -244,6 +233,7 @@ class BluetoothLEManager(
 
         bleDeviceHashMap[address]?.isDeviceLoading = true
         refreshDeviceList()
+        deviceBeingEdited = false
     }
 
     override fun writeToDevice(address: String, command: ByteArray) {
@@ -271,6 +261,32 @@ class BluetoothLEManager(
 
     private fun BluetoothDevice.isBLEDOMDevice(): Boolean =
         name.startsWith("ELK-BLEDOM")
+
+    private fun resetVerifyBleDevicesTask() {
+        bluetoothLEManagerScope.launch(Dispatchers.Main) {
+            verifyBleDeviceTask?.cancel()
+            verifyBleDeviceTask = null
+            verifyBleDeviceTask = Timer().schedule(1000, 1000) {
+                if (deviceBeingEdited) return@schedule
+                Log.d(TAG, "Run verifyBleDeviceTask task")
+                // Items should not be directly removed from forEach
+                // loop, causes ConcurrentModificationException
+                val addressesToRemove = arrayListOf<String>()
+
+                bleDeviceHashMap.forEach { (address, bleDevice) ->
+                    if (bleDevice.notAvailable && !deviceBeingEdited) {
+                        Log.d(TAG, "Device not found - $address")
+                        addressesToRemove.add(address)
+                    }
+                }
+
+                if (addressesToRemove.isNotEmpty() && !deviceBeingEdited) {
+                    addressesToRemove.forEach { bleDeviceHashMap.remove(it) }
+                    refreshDeviceList()
+                }
+            }
+        }
+    }
 
     inner class BluetoothDeviceGattCallback : BluetoothGattCallback() {
         override fun onCharacteristicWrite(
@@ -305,6 +321,7 @@ class BluetoothLEManager(
                         bleDeviceHashMap[it]?.apply {
                             isConnected = false
                             isDeviceLoading = false
+                            lastSeen = System.currentTimeMillis()
                         }
                         bleConnectionHashMap.remove(it)
 

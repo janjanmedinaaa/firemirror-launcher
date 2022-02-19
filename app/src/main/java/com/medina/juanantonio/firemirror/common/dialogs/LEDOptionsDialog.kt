@@ -82,8 +82,10 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
             }
         }
 
-        binding.switchPower.setOnCheckedChangeListener { switchView, isChecked ->
-            updatePowerStatus(isChecked, saveConfig = switchView.isPressed)
+        // Used setOnClickListener instead of setOnCheckedChangeListener
+        // to verify that the user clicked the switch manually
+        binding.switchPower.setOnClickListener {
+            updatePowerStatus(binding.switchPower.isChecked)
         }
 
         binding.sliderRed.let {
@@ -176,8 +178,7 @@ class LEDOptionsDialog : DialogFragment(), LabelValueListAdapter.LabelValueListe
         }
     }
 
-    private fun updatePowerStatus(isPowerOn: Boolean, saveConfig: Boolean = false) {
-        if (saveConfig) saveConfig(isOn = isPowerOn)
+    private fun updatePowerStatus(isPowerOn: Boolean) {
         viewModel.writeToDevice(
             BLEDOMCommander.setPower(isPowerOn)
         )

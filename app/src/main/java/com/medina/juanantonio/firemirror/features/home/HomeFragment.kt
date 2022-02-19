@@ -36,7 +36,6 @@ import com.medina.juanantonio.firemirror.features.MainViewModel
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
 
@@ -283,13 +282,18 @@ class HomeFragment : Fragment() {
                     stackLayoutManager.scrollToPosition(nextItem)
                 }
                 KeyEvent.KEYCODE_MENU -> {
+                    bleDomDevicesManager.isLEDStatusOn = !bleDomDevicesManager.isLEDStatusOn
+
                     bluetoothLeManager.bleDeviceHashMap
                         .filter { (_, device) -> device.isConnected && device is BLEDOMDevice }
                         .forEach { (macAddress, device) ->
                             if (device is BLEDOMDevice) {
                                 viewModel.viewModelScope.launch {
                                     val newStatus =
-                                        bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+                                        bleDomDevicesManager.updateDeviceLEDStatus(
+                                            macAddress = macAddress,
+                                            status = bleDomDevicesManager.isLEDStatusOn
+                                        )
 
                                     bluetoothLeManager.writeToDevice(
                                         macAddress,

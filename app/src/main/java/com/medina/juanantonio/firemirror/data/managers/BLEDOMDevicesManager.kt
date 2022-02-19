@@ -6,6 +6,7 @@ import com.medina.juanantonio.firemirror.data.models.LEDData
 
 class BLEDOMDevicesManager(fireMirrorDb: FireMirrorDb) : IBLEDOMDevicesManager {
     private val bleDOMDeviceDao = fireMirrorDb.bleDOMDeviceDao()
+    override var isLEDStatusOn: Boolean = false
 
     override suspend fun addDevice(bleDOMDevice: BLEDOMDevice) {
         if (exists(bleDOMDevice.macAddress)) return
@@ -24,10 +25,13 @@ class BLEDOMDevicesManager(fireMirrorDb: FireMirrorDb) : IBLEDOMDevicesManager {
         bleDOMDeviceDao.updateDeviceDetails(macAddress, alias)
     }
 
-    override suspend fun updateDeviceLEDStatus(macAddress: String): Boolean {
+    override suspend fun updateDeviceLEDStatus(
+        macAddress: String,
+        status: Boolean?
+    ): Boolean {
         return getDevice(macAddress)?.let {
             val ledData = it.ledData.apply {
-                isOn = !isOn
+                isOn = status ?: !isOn
             }
             updateDeviceLEDData(macAddress, ledData)
             ledData.isOn
@@ -56,11 +60,13 @@ class BLEDOMDevicesManager(fireMirrorDb: FireMirrorDb) : IBLEDOMDevicesManager {
 }
 
 interface IBLEDOMDevicesManager {
+    var isLEDStatusOn: Boolean
+
     suspend fun addDevice(bleDOMDevice: BLEDOMDevice)
     suspend fun getAllDevices(): List<BLEDOMDevice>
     suspend fun getDevice(macAddress: String): BLEDOMDevice?
     suspend fun updateDeviceDetails(macAddress: String, alias: String)
-    suspend fun updateDeviceLEDStatus(macAddress: String): Boolean
+    suspend fun updateDeviceLEDStatus(macAddress: String, status: Boolean? = null): Boolean
     suspend fun updateDeviceLEDData(macAddress: String, ledData: LEDData)
     suspend fun exists(macAddress: String): Boolean
     suspend fun updateLastConnectionStatus(macAddress: String, isPreviouslyConnected: Boolean)

@@ -1,7 +1,5 @@
 package com.medina.juanantonio.firemirror.data.models
 
-import java.util.*
-
 open class BleDevice(
     val name: String,
     var alias: String,
@@ -13,14 +11,14 @@ open class BleDevice(
     open var isConnected: Boolean = false
     open var isDeviceLoading: Boolean = false
     open var isPaired: Boolean = false
-    open var lastSeen = Date().time
+    open var lastSeen = System.currentTimeMillis()
 
     open val notAvailable: Boolean
         get() {
-            val currentTime = Date().time
+            val currentTime = System.currentTimeMillis()
             val lastSeenDifference = currentTime - lastSeen
 
-            return lastSeenDifference >= 2000 && !isConnected && !isDeviceLoading
+            return lastSeenDifference >= 4000 && !isConnected && !isDeviceLoading
         }
 
     fun getDeviceName() =

@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    android:paddingHorizontal="@dimen/dp_8"
+    android:paddingTop="@dimen/dp_8">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
@@ -94,6 +96,7 @@
         android:id="@+id/list_display_spotify"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp_8"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_start"
         app:layout_constraintHeight_max="@dimen/dp_200"
@@ -108,9 +111,9 @@
         app:layoutManager=".common.views.StackLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline_end"
+        app:layout_constraintHeight_percent=".5"
         app:layout_constraintStart_toEndOf="@id/guideline_start"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintHeight_percent=".5"
         app:layout_constraintVertical_bias="1"
         tools:listitem="@layout/item_lyrics" />
 

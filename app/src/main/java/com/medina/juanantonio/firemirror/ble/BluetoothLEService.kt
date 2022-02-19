@@ -166,12 +166,17 @@ class BluetoothLEService : LifecycleService(), BluetoothLeScanCallBack {
                 bluetoothLEManager.refreshDeviceList()
             }
 
+            bleDomDevicesManager.isLEDStatusOn = !bleDomDevicesManager.isLEDStatusOn
+
             bluetoothLEManager.bleDeviceHashMap
                 .filter { (_, device) -> device.isConnected && device is BLEDOMDevice }
                 .forEach { (macAddress, device) ->
                     if (device is BLEDOMDevice) {
                         val newStatus =
-                            bleDomDevicesManager.updateDeviceLEDStatus(macAddress)
+                            bleDomDevicesManager.updateDeviceLEDStatus(
+                                macAddress = macAddress,
+                                status = bleDomDevicesManager.isLEDStatusOn
+                            )
 
                         bluetoothLEManager.writeToDevice(
                             macAddress,
